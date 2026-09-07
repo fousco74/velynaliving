@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  unrs-resolver: false
+
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "prisma"
+  - "esbuild"
+  - "sharp"

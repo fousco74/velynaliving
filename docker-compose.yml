@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: velyna-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: velyna
+      POSTGRES_PASSWORD: velyna_dev
+      POSTGRES_DB: velyna
+    ports:
+      - "5434:5432"
+    volumes:
+      - velyna-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U velyna -d velyna"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  velyna-pgdata:
