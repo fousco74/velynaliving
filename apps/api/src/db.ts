@@ -1,0 +1,14 @@
+import { PrismaClient } from "./generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { env } from "./config/env.js";
+
+const pool = new Pool({ connectionString: env.DATABASE_URL, max: 10 });
+const adapter = new PrismaPg(pool);
+
+export const prisma = new PrismaClient({ adapter });
+
+export const disconnect = async () => {
+  await prisma.$disconnect();
+  await pool.end();
+};

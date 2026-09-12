@@ -1,0 +1,248 @@
+// Velyna Living — schéma de données
+// Convention : champs en camelCase côté Prisma, colonnes en snake_case côté Postgres (@map / @@map).
+// Tous les montants sont des ENTIERS en F CFA (le XOF n'a pas de décimales).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+// Volontairement sans OUT_OF_STOCK : « épuisé » se dérive de stock = 0.
+// Deux sources de vérité pour la même information finissent toujours par diverger.
+enum ProductStatus {
+  ONLINE
+  DRAFT
+}
+
+enum JournalStatus {
+  PUBLISHED
+  DRAFT
+}
+
+// Les 6 statuts du design.
+enum OrderStatus {
+  NEW
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+// Détermine les frais : Abidjan 2 000 / Intérieur 5 000 / Retrait boutique gratuit.
+enum DeliveryMethod {
+  ABIDJAN
+  INTERIOR
+  PICKUP
+}
+
+enum Operator {
+  MTN
+  ORANGE
+  MOOV_MONEY
+  WAVE
+  CARD
+  CASH_ON_DELIVERY
+}
+
+// V1 : aucune intégration de paiement, tout reste en PENDING
+// et l'admin confirme à la main. Les valeurs existent déjà pour la V2.
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+// ─────────────────────────── Comptes ───────────────────────────
+
+// V1 : sert uniquement aux comptes admin. Les clients commandent en invité.
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  customer Customer?
+
+  @@map("user")
+}
+
+// Créé à la volée au moment de la commande (upsert sur l'email).
+// userId est optionnel : c'est ce qui rend la commande invité possible.
+model Customer {
+  id        Int      @id @default(autoincrement())
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String   @unique
+  phone     String?
+  address   String?
+  userId    Int?     @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User?   @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  @@map("customer")
+}
+
+// ─────────────────────────── Catalogue ───────────────────────────
+
+model House {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("house")
+}
+
+model Product {
+  id       Int    @id @default(autoincrement())
+  slug     String @unique
+  name     String
+  ref      String @unique
+  houseId  Int    @map("house_id")
+  price    Int
+  capacity String // « 250 ml », « 50 g »
+  stock    Int    @default(0)
+
+  // Visuels. Seul le matcha renseigne imgDetail / detailBackground / inkColor.
+  img              String
+  imgDetail        String? @map("img_detail")
+  detailBackground String? @map("detail_background")
+  inkColor         String? @map("ink_color")
+
+  // Notes olfactives : nullables, le matcha n'en a pas au même sens.
+  headNote       String? @map("head_note")
+  heartNote      String? @map("heart_note")
+  backgroundNote String? @map("background_note")
+
+  piece       String?
+  usage       String? // absent du matcha dans le design
+  ambiance    String?
+  description String?
+  newRank     Int?    @map("new_rank") // rang de nouveauté (1 = plus récent)
+
+  status    ProductStatus @default(DRAFT)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  house      House          @relation(fields: [houseId], references: [id])
+  orderItems OrderProduct[]
+
+  @@index([houseId])
+  @@index([status])
+  @@map("product")
+}
+
+model Journal {
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique
+  title       String
+  category    String?
+  excerpt     String? // chapô
+  body        String? // corps de l'article
+  imageUrl    String?       @map("image_url")
+  readingTime String?       @map("reading_time")
+  views       Int           @default(0)
+  publishedAt DateTime?     @map("published_at")
+  status      JournalStatus @default(DRAFT)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("journal")
+}
+
+// ─────────────────────────── Commandes ───────────────────────────
+
+model Order {
+  id     Int         @id @default(autoincrement())
+  number String      @unique // VL-2026-XXXX, clé publique du suivi
+  status OrderStatus @default(NEW)
+
+  customerId Int @map("customer_id")
+
+  // Coordonnées FIGÉES au moment de la commande.
+  // Le client peut changer d'adresse ensuite sans réécrire l'historique.
+  firstName    String  @map("first_name")
+  lastName     String  @map("last_name")
+  email        String
+  phone        String
+  address      String?
+  municipality String // validé côté API contre COMMUNES_ABIDJAN (packages/shared)
+  instruction  String?
+
+  deliveryMethod DeliveryMethod @map("delivery_method")
+
+  // Montants recalculés côté serveur, jamais reçus du client.
+  subTotal     Int     @map("sub_total")
+  deliveryCost Int     @map("delivery_cost")
+  discount     Int     @default(0)
+  promoCode    String? @map("promo_code")
+  total        Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  customer Customer       @relation(fields: [customerId], references: [id])
+  items    OrderProduct[]
+  payment  Payment?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("order")
+}
+
+// Ligne de commande : document comptable figé, pas une vue sur le catalogue.
+// unitPrice / productName / productRef sont copiés à l'achat pour que le
+// montant d'une vieille commande ne bouge jamais.
+model OrderProduct {
+  orderId     Int    @map("order_id")
+  productId   Int    @map("product_id")
+  quantity    Int    @default(1)
+  unitPrice   Int    @map("unit_price")
+  productName String @map("product_name")
+  productRef  String @map("product_ref")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([orderId, productId])
+  @@index([productId])
+  @@map("order_product")
+}
+
+// V1 : enregistre l'intention de règlement choisie à l'étape 3 du tunnel.
+// Aucune intégration opérateur — prévu pour une évolution future.
+model Payment {
+  id        Int           @id @default(autoincrement())
+  orderId   Int           @unique @map("order_id")
+  operator  Operator
+  status    PaymentStatus @default(PENDING)
+  amount    Int
+  reference String? // référence transaction, remplie en V2
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payment")
+}
