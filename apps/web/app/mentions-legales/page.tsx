@@ -4,25 +4,25 @@ export const metadata: Metadata = { title: "Mentions légales" };
 
 const SECTIONS: { heading: string; text: string }[] = [
   {
-    "heading": "Éditeur",
-    "text": "MH VELYNÁ GROUP — Cocody, Abidjan, Côte d'Ivoire. Contact : service@velynaliving.com."
+    heading: "Éditeur",
+    text: "MH VELYNÁ GROUP — Cocody, Abidjan, Côte d'Ivoire. Contact : service@velynaliving.com.",
   },
   {
-    "heading": "Directrice de la publication",
-    "text": "Mani Axelle Hermine, CEO & Founder."
+    heading: "Directrice de la publication",
+    text: "Mani Axelle Hermine, CEO & Founder.",
   },
   {
-    "heading": "Hébergement",
-    "text": "Le site est hébergé chez un prestataire tiers. Les coordonnées complètes sont communiquées sur simple demande à service@velynaliving.com."
+    heading: "Hébergement",
+    text: "Le site est hébergé chez un prestataire tiers. Les coordonnées complètes sont communiquées sur simple demande à service@velynaliving.com.",
   },
   {
-    "heading": "Propriété intellectuelle",
-    "text": "L'ensemble des contenus du site — textes, photographies, identités de marque, compositions olfactives — est la propriété exclusive de MH VELYNÁ GROUP. Toute reproduction sans autorisation est interdite."
+    heading: "Propriété intellectuelle",
+    text: "L'ensemble des contenus du site — textes, photographies, identités de marque, compositions olfactives — est la propriété exclusive de MH VELYNÁ GROUP. Toute reproduction sans autorisation est interdite.",
   },
   {
-    "heading": "Crédits",
-    "text": "Photographies et direction artistique : MH VELYNÁ GROUP."
-  }
+    heading: "Crédits",
+    text: "Photographies et direction artistique : MH VELYNÁ GROUP.",
+  },
 ];
 
 export default function Page() {

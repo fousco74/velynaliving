@@ -23,9 +23,7 @@ const OPTIONS = [
 export default function LivraisonPage() {
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Service client
         </p>
@@ -59,7 +57,14 @@ export default function LivraisonPage() {
               >
                 {option.price}
               </p>
-              <p style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.75, color: "var(--ink-3)" }}>
+              <p
+                style={{
+                  margin: "12px 0 0",
+                  fontSize: 17,
+                  lineHeight: 1.75,
+                  color: "var(--ink-3)",
+                }}
+              >
                 {option.text}
               </p>
             </div>

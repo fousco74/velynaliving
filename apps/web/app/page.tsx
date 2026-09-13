@@ -139,8 +139,8 @@ export default function HomePage() {
             >
               <p className="lead" style={{ margin: 0 }}>
                 Une tasse de matcha préparée avec soin. Un parfum qui habille une pièce. Une
-                atmosphère qui apaise l&apos;esprit. Parce que notre intérieur devrait être bien plus
-                qu&apos;un simple lieu de vie.
+                atmosphère qui apaise l&apos;esprit. Parce que notre intérieur devrait être bien
+                plus qu&apos;un simple lieu de vie.
               </p>
               <p className="lead" style={{ margin: 0 }}>
                 VELYNÁLIVING est l&apos;univers lifestyle imaginé par MH VELYNÁ GROUP, une maison
@@ -219,7 +219,7 @@ export default function HomePage() {
                 alt={article.title}
                 width={800}
                 height={533}
-                style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%" }}
+                style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%", height: "auto" }}
               />
               <p className="eyebrow" style={{ marginTop: 18, letterSpacing: "0.22em" }}>
                 {article.category} — {article.date}
@@ -227,7 +227,9 @@ export default function HomePage() {
               <h3 className="h3" style={{ marginTop: 12 }}>
                 {article.title}
               </h3>
-              <p style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}>
+              <p
+                style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}
+              >
                 {article.excerpt}
               </p>
             </Link>
@@ -235,10 +237,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        className="section"
-        style={{ background: "var(--bg-dark)", color: "var(--cream)" }}
-      >
+      <section className="section" style={{ background: "var(--bg-dark)", color: "var(--cream)" }}>
         <div className="grid12" style={{ alignItems: "center" }}>
           <div style={{ gridColumn: "1 / span 4" }}>
             <Image
@@ -246,7 +245,13 @@ export default function HomePage() {
               alt="Mani Axelle Hermine, fondatrice de MH Velyná Group"
               width={600}
               height={800}
-              style={{ aspectRatio: "3 / 4", objectFit: "cover", objectPosition: "50% 18%", width: "100%" }}
+              style={{
+                aspectRatio: "3 / 4",
+                objectFit: "cover",
+                objectPosition: "50% 18%",
+                width: "100%",
+                height: "auto",
+              }}
             />
           </div>
           <div style={{ gridColumn: "6 / span 7" }}>
@@ -366,6 +371,7 @@ const BrandBlock = ({
       style={{
         position: "relative",
         width: "100%",
+        height: "auto",
         maxWidth: 620,
         marginLeft: dark ? "var(--gutter)" : "auto",
         marginRight: dark ? "auto" : "var(--gutter)",

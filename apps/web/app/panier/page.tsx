@@ -50,7 +50,13 @@ export default function PanierPage() {
 
       <section style={{ padding: "0 var(--gutter) clamp(64px, 9vw, 130px)" }}>
         {!ready ? null : lines.length === 0 ? (
-          <div style={{ borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "clamp(32px, 5vw, 72px) 0" }}>
+          <div
+            style={{
+              borderTop: "1px solid var(--line)",
+              borderBottom: "1px solid var(--line)",
+              padding: "clamp(32px, 5vw, 72px) 0",
+            }}
+          >
             <p
               style={{
                 margin: 0,
@@ -90,7 +96,12 @@ export default function PanierPage() {
                       alt={line.name}
                       width={200}
                       height={266}
-                      style={{ width: "100%", aspectRatio: "3 / 4", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        aspectRatio: "3 / 4",
+                        objectFit: "cover",
+                      }}
                     />
                   </Link>
                   <div>
@@ -104,7 +115,13 @@ export default function PanierPage() {
                       {line.houseName} — {line.capacity} — {formatXOF(line.price)}
                     </p>
                     <div
-                      style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16, marginTop: 14 }}
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 16,
+                        marginTop: 14,
+                      }}
                     >
                       <span className="qty" style={{ padding: "8px 14px", fontSize: 11 }}>
                         <button
@@ -161,7 +178,11 @@ export default function PanierPage() {
             </div>
 
             <aside
-              style={{ gridColumn: "9 / span 4", borderTop: "1px solid var(--line)", paddingTop: 24 }}
+              style={{
+                gridColumn: "9 / span 4",
+                borderTop: "1px solid var(--line)",
+                paddingTop: 24,
+              }}
             >
               <p className="eyebrow" style={{ marginBottom: 24, letterSpacing: "0.26em" }}>
                 Récapitulatif
@@ -244,9 +265,11 @@ export default function PanierPage() {
                 Passer commande
               </Link>
 
-              <p style={{ margin: "16px 0 0", fontSize: 16, lineHeight: 1.7, color: "var(--muted)" }}>
-                Livraison offerte dès {formatXOF(FREE_DELIVERY_THRESHOLD)}. Les frais sont calculés à
-                l&apos;étape suivante selon votre commune.
+              <p
+                style={{ margin: "16px 0 0", fontSize: 16, lineHeight: 1.7, color: "var(--muted)" }}
+              >
+                Livraison offerte dès {formatXOF(FREE_DELIVERY_THRESHOLD)}. Les frais sont calculés
+                à l&apos;étape suivante selon votre commune.
               </p>
             </aside>
           </div>

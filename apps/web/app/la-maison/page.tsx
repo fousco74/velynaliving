@@ -74,8 +74,8 @@ export default function LaMaisonPage() {
             style={{ margin: "28px 0 0", maxWidth: "54ch", fontSize: "clamp(18px, 1.5vw, 21px)" }}
           >
             MH VELYNÁ GROUP est une maison créative qui développe des marques inspirées par le
-            bien-être, le design et l&apos;art de vivre. VELYNÁLIVING en est l&apos;univers lifestyle
-            : une destination où chaque détail a du sens.
+            bien-être, le design et l&apos;art de vivre. VELYNÁLIVING en est l&apos;univers
+            lifestyle : une destination où chaque détail a du sens.
           </p>
         </div>
         <figure style={{ gridColumn: "9 / span 4", margin: 0 }}>
@@ -118,7 +118,10 @@ export default function LaMaisonPage() {
             Vision &amp; histoire
           </p>
           <div style={{ gridColumn: "5 / span 7" }} className="prose">
-            <h2 className="h2" style={{ marginBottom: 26, maxWidth: "24ch", fontSize: "clamp(26px, 2.8vw, 44px)" }}>
+            <h2
+              className="h2"
+              style={{ marginBottom: 26, maxWidth: "24ch", fontSize: "clamp(26px, 2.8vw, 44px)" }}
+            >
               Des créations qui ont <span className="italic">une intention.</span>
             </h2>
             <p>
@@ -168,7 +171,15 @@ export default function LaMaisonPage() {
             </Link>
           </div>
           <div style={{ gridColumn: "7 / span 6" }}>
-            <p className="lead" style={{ margin: "0 0 22px", maxWidth: "56ch", fontSize: "clamp(18px, 1.45vw, 21px)", color: "var(--ink-2)" }}>
+            <p
+              className="lead"
+              style={{
+                margin: "0 0 22px",
+                maxWidth: "56ch",
+                fontSize: "clamp(18px, 1.45vw, 21px)",
+                color: "var(--ink-2)",
+              }}
+            >
               Nous passons une grande partie de nos journées à l&apos;extérieur, exposés à de
               multiples sollicitations. Nous dépensons continuellement notre énergie, qu&apos;elle
               soit physique, mentale ou émotionnelle, jusqu&apos;à parfois rentrer chez nous
@@ -257,6 +268,7 @@ export default function LaMaisonPage() {
               sizes="(max-width: 860px) 100vw, 40vw"
               style={{
                 width: "100%",
+                height: "auto",
                 aspectRatio: "3 / 4",
                 objectFit: "cover",
                 objectPosition: "50% 18%",
@@ -265,7 +277,10 @@ export default function LaMaisonPage() {
             />
           </div>
           <div style={{ gridRow: 1, gridColumn: "7 / span 6" }}>
-            <p className="eyebrow" style={{ marginBottom: 20, letterSpacing: "0.3em", color: "var(--rose)" }}>
+            <p
+              className="eyebrow"
+              style={{ marginBottom: 20, letterSpacing: "0.3em", color: "var(--rose)" }}
+            >
               CEO &amp; Founder
             </p>
             <h2 className="h2" style={{ fontSize: "clamp(28px, 3.2vw, 50px)" }}>
@@ -294,8 +309,8 @@ export default function LaMaisonPage() {
               }}
             >
               En devenant adulte, MANI AXELLE HERMINE a découvert une véritable appréciation pour
-              l&apos;univers de la maison : les matières, les détails, l&apos;harmonie des espaces et
-              tout ce qui transforme un lieu de vie en un espace où l&apos;on se sent pleinement
+              l&apos;univers de la maison : les matières, les détails, l&apos;harmonie des espaces
+              et tout ce qui transforme un lieu de vie en un espace où l&apos;on se sent pleinement
               soi-même. Cette sensibilité grandissante a fait naître une envie profonde : créer un
               groupe capable de réunir des marques pensées autour de l&apos;art de vivre, de
               l&apos;élégance et du bien-être au quotidien.
@@ -314,7 +329,11 @@ export default function LaMaisonPage() {
               histoire et où la maison devient bien plus qu&apos;un lieu : une expression de soi.
             </p>
             <blockquote
-              style={{ margin: "30px 0 0", padding: "0 0 0 26px", borderLeft: "1px solid rgba(201,180,154,0.55)" }}
+              style={{
+                margin: "30px 0 0",
+                padding: "0 0 0 26px",
+                borderLeft: "1px solid rgba(201,180,154,0.55)",
+              }}
             >
               <p
                 style={{

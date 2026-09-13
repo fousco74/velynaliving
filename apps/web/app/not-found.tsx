@@ -43,6 +43,7 @@ export default function NotFound() {
           sizes="(max-width: 860px) 100vw, 40vw"
           style={{
             width: "100%",
+            height: "auto",
             aspectRatio: "4 / 5",
             objectFit: "cover",
             background: "#ede7df",

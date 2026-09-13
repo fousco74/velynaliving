@@ -33,10 +33,12 @@ export const OrderDetail = ({ order }: { order: Order }) => (
             alt={item.productName}
             width={160}
             height={213}
-            style={{ width: "100%", aspectRatio: "3 / 4", objectFit: "cover" }}
+            style={{ width: "100%", height: "auto", aspectRatio: "3 / 4", objectFit: "cover" }}
           />
           <div>
-            <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 20 }}>{item.productName}</p>
+            <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 20 }}>
+              {item.productName}
+            </p>
             <p className="eyebrow" style={{ marginTop: 6, letterSpacing: "0.2em" }}>
               {item.product.capacity} × {item.quantity} — {formatXOF(item.unitPrice)}
             </p>
@@ -107,7 +109,8 @@ export const OrderDetail = ({ order }: { order: Order }) => (
       </div>
       {order.payment && (
         <p className="eyebrow" style={{ marginTop: 10, letterSpacing: "0.18em" }}>
-          Règlement — {OPERATOR_LABELS[order.payment.operator as Operator] ?? order.payment.operator}
+          Règlement —{" "}
+          {OPERATOR_LABELS[order.payment.operator as Operator] ?? order.payment.operator}
         </p>
       )}
     </aside>

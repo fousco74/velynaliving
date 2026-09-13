@@ -79,6 +79,7 @@ export default async function ArticlePage({ params }: PageProps<"/journal/[slug]
           sizes="100vw"
           style={{
             width: "100%",
+            height: "auto",
             aspectRatio: "16 / 7",
             objectFit: "cover",
             background: "#ede7df",
@@ -176,7 +177,7 @@ export default async function ArticlePage({ params }: PageProps<"/journal/[slug]
                 width={800}
                 height={533}
                 sizes="(max-width: 560px) 100vw, 33vw"
-                style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%" }}
+                style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%", height: "auto" }}
               />
               <p className="eyebrow" style={{ marginTop: 16, letterSpacing: "0.22em" }}>
                 {item.category} — {item.readingTime}

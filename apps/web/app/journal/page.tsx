@@ -7,8 +7,7 @@ export const metadata: Metadata = { title: "Le journal" };
 
 const CATEGORIES = ["Tous", ...new Set(ARTICLES.map((article) => article.category))];
 
-const first = (value: string | string[] | undefined) =>
-  Array.isArray(value) ? value[0] : value;
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function JournalPage({ searchParams }: PageProps<"/journal">) {
   const params = await searchParams;
@@ -21,9 +20,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
 
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(24px, 3vw, 44px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(24px, 3vw, 44px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Le journal
         </p>
@@ -84,6 +81,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                 sizes="(max-width: 860px) 100vw, 58vw"
                 style={{
                   width: "100%",
+                  height: "auto",
                   aspectRatio: "16 / 10",
                   objectFit: "cover",
                   background: "#ede7df",
@@ -126,7 +124,12 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                   width={800}
                   height={533}
                   sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%" }}
+                  style={{
+                    aspectRatio: "3 / 2",
+                    objectFit: "cover",
+                    width: "100%",
+                    height: "auto",
+                  }}
                 />
                 <p className="eyebrow" style={{ marginTop: 18, letterSpacing: "0.22em" }}>
                   {article.category} — {article.date} — {article.readingTime}
@@ -134,7 +137,14 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                 <h3 className="h3" style={{ marginTop: 12 }}>
                   {article.title}
                 </h3>
-                <p style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}>
+                <p
+                  style={{
+                    margin: "12px 0 0",
+                    fontSize: 17,
+                    lineHeight: 1.7,
+                    color: "var(--muted)",
+                  }}
+                >
                   {article.excerpt}
                 </p>
               </Link>

@@ -11,10 +11,26 @@ export const metadata: Metadata = {
 };
 
 const RITUAL = [
-  { num: "01", title: "Tamiser", text: "Deux chashaku au tamis fin : la poudre devient aérienne et sans grumeaux." },
-  { num: "02", title: "Verser", text: "70 ml d'eau à 80 °C. Jamais bouillante : l'amertume vient de la chaleur." },
-  { num: "03", title: "Fouetter", text: "En W, poignet souple, une minute, jusqu'à une mousse fine et stable." },
-  { num: "04", title: "Déguster", text: "Trois gorgées dans les deux minutes, avant que la mousse ne retombe." },
+  {
+    num: "01",
+    title: "Tamiser",
+    text: "Deux chashaku au tamis fin : la poudre devient aérienne et sans grumeaux.",
+  },
+  {
+    num: "02",
+    title: "Verser",
+    text: "70 ml d'eau à 80 °C. Jamais bouillante : l'amertume vient de la chaleur.",
+  },
+  {
+    num: "03",
+    title: "Fouetter",
+    text: "En W, poignet souple, une minute, jusqu'à une mousse fine et stable.",
+  },
+  {
+    num: "04",
+    title: "Déguster",
+    text: "Trois gorgées dans les deux minutes, avant que la mousse ne retombe.",
+  },
 ];
 
 const BENEFITS = [
@@ -53,10 +69,7 @@ export default async function VelynaKaiPage() {
             padding: "clamp(40px, 6vw, 88px) clamp(20px, 4vw, 64px)",
           }}
         >
-          <p
-            className="eyebrow"
-            style={{ marginBottom: 24, color: "rgba(244,245,232,0.78)" }}
-          >
+          <p className="eyebrow" style={{ marginBottom: 24, color: "rgba(244,245,232,0.78)" }}>
             Marque II — Matcha &amp; rituels
           </p>
           <h1
@@ -88,7 +101,11 @@ export default async function VelynaKaiPage() {
           <Link
             href={`/produit/${matcha.slug}`}
             className="btn btn-light"
-            style={{ alignSelf: "flex-start", marginTop: 32, borderColor: "rgba(244,245,232,0.75)" }}
+            style={{
+              alignSelf: "flex-start",
+              marginTop: 32,
+              borderColor: "rgba(244,245,232,0.75)",
+            }}
           >
             Voir le produit
           </Link>
@@ -132,9 +149,9 @@ export default async function VelynaKaiPage() {
             color: "#3a3e33",
           }}
         >
-          Une collection de matchas premium et de rituels de dégustation conçus pour offrir un moment
-          d&apos;équilibre, d&apos;énergie et de sérénité. Chaque création célèbre le plaisir d&apos;un
-          instant suspendu, où qualité, esthétique et bien-être ne font qu&apos;un.
+          Une collection de matchas premium et de rituels de dégustation conçus pour offrir un
+          moment d&apos;équilibre, d&apos;énergie et de sérénité. Chaque création célèbre le plaisir
+          d&apos;un instant suspendu, où qualité, esthétique et bien-être ne font qu&apos;un.
         </p>
       </section>
 
@@ -147,7 +164,9 @@ export default async function VelynaKaiPage() {
             paddingTop: "clamp(28px, 3.5vw, 52px)",
           }}
         >
-          <div style={{ gridRow: 1, gridColumn: "1 / span 6", minHeight: 340, position: "relative" }}>
+          <div
+            style={{ gridRow: 1, gridColumn: "1 / span 6", minHeight: 340, position: "relative" }}
+          >
             <Image
               src="/assets/velyna-kai.jpeg"
               alt="Matcha Latte Velynákaï"
@@ -165,7 +184,10 @@ export default async function VelynaKaiPage() {
               justifyContent: "center",
             }}
           >
-            <p className="eyebrow" style={{ marginBottom: 16, letterSpacing: "0.3em", color: "#8f9a82" }}>
+            <p
+              className="eyebrow"
+              style={{ marginBottom: 16, letterSpacing: "0.3em", color: "#8f9a82" }}
+            >
               Le produit
             </p>
             <h2 className="h2" style={{ fontSize: "clamp(26px, 2.9vw, 46px)" }}>
@@ -256,7 +278,10 @@ export default async function VelynaKaiPage() {
           }}
         >
           {RITUAL.map((step) => (
-            <div key={step.num} style={{ borderTop: "1px solid rgba(163,175,150,0.6)", paddingTop: 22 }}>
+            <div
+              key={step.num}
+              style={{ borderTop: "1px solid rgba(163,175,150,0.6)", paddingTop: 22 }}
+            >
               <p
                 className="eyebrow"
                 style={{ marginBottom: 16, letterSpacing: "0.26em", color: "#8e9b84" }}
@@ -274,7 +299,10 @@ export default async function VelynaKaiPage() {
       <section className="section">
         <div className="grid12" style={{ alignItems: "start" }}>
           <div style={{ gridColumn: "1 / span 5" }}>
-            <p className="eyebrow" style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}>
+            <p
+              className="eyebrow"
+              style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}
+            >
               L&apos;origine
             </p>
             <h2 className="h2" style={{ fontSize: "clamp(24px, 2.6vw, 40px)", marginBottom: 20 }}>
@@ -282,11 +310,19 @@ export default async function VelynaKaiPage() {
               <br />
               <span className="italic">première récolte</span>
             </h2>
-            <p style={{ margin: 0, maxWidth: "46ch", fontSize: 18, lineHeight: 1.78, color: "#3a3e33" }}>
-              Les théiers sont ombrés trois semaines avant la cueillette : privée de lumière directe,
-              la feuille concentre ses acides aminés et perd son amertume. Seule la première récolte
-              de mai est retenue, puis broyée lentement à la meule de pierre pour ne pas chauffer la
-              poudre.
+            <p
+              style={{
+                margin: 0,
+                maxWidth: "46ch",
+                fontSize: 18,
+                lineHeight: 1.78,
+                color: "#3a3e33",
+              }}
+            >
+              Les théiers sont ombrés trois semaines avant la cueillette : privée de lumière
+              directe, la feuille concentre ses acides aminés et perd son amertume. Seule la
+              première récolte de mai est retenue, puis broyée lentement à la meule de pierre pour
+              ne pas chauffer la poudre.
             </p>
             <dl
               style={{
@@ -329,7 +365,10 @@ export default async function VelynaKaiPage() {
           </div>
 
           <div style={{ gridColumn: "7 / span 6" }}>
-            <p className="eyebrow" style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}>
+            <p
+              className="eyebrow"
+              style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}
+            >
               Les bienfaits
             </p>
             <div style={{ display: "flex", flexDirection: "column" }}>

@@ -15,7 +15,9 @@ const load = async (slug: string) => {
   }
 };
 
-export async function generateMetadata({ params }: PageProps<"/produit/[slug]">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/produit/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const product = await load(slug);
   return { title: product.name, description: product.ambiance ?? undefined };
@@ -48,6 +50,7 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
             sizes="(max-width: 860px) 100vw, 50vw"
             style={{
               width: "100%",
+              height: "auto",
               aspectRatio: product.imgDetail ? "4 / 5" : "3 / 4",
               objectFit: "cover",
               background: product.detailBackground ?? "#ede7df",
@@ -95,7 +98,10 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
           )}
 
           {product.description && (
-            <p className="lead" style={{ margin: "18px 0 0", maxWidth: "52ch", color: "var(--ink-2)" }}>
+            <p
+              className="lead"
+              style={{ margin: "18px 0 0", maxWidth: "52ch", color: "var(--ink-2)" }}
+            >
               {product.description}
             </p>
           )}

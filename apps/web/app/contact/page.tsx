@@ -10,9 +10,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Contact
         </p>
@@ -103,7 +101,15 @@ export default function ContactPage() {
             }}
           >
             <div>
-              <p className="eyebrow" style={{ marginBottom: 12, fontSize: 9, letterSpacing: "0.26em", color: "var(--muted-3)" }}>
+              <p
+                className="eyebrow"
+                style={{
+                  marginBottom: 12,
+                  fontSize: 9,
+                  letterSpacing: "0.26em",
+                  color: "var(--muted-3)",
+                }}
+              >
                 Service client
               </p>
               <p
@@ -116,13 +122,23 @@ export default function ContactPage() {
               >
                 bonjour@velynaliving.com
               </p>
-              <p style={{ margin: "10px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}>
+              <p
+                style={{ margin: "10px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}
+              >
                 +225 27 22 45 18 60
               </p>
             </div>
 
             <div style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
-              <p className="eyebrow" style={{ marginBottom: 12, fontSize: 9, letterSpacing: "0.26em", color: "var(--muted-3)" }}>
+              <p
+                className="eyebrow"
+                style={{
+                  marginBottom: 12,
+                  fontSize: 9,
+                  letterSpacing: "0.26em",
+                  color: "var(--muted-3)",
+                }}
+              >
                 Horaires
               </p>
               <p style={{ margin: 0, fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}>
@@ -133,7 +149,15 @@ export default function ContactPage() {
             </div>
 
             <div style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
-              <p className="eyebrow" style={{ marginBottom: 12, fontSize: 9, letterSpacing: "0.26em", color: "var(--muted-3)" }}>
+              <p
+                className="eyebrow"
+                style={{
+                  marginBottom: 12,
+                  fontSize: 9,
+                  letterSpacing: "0.26em",
+                  color: "var(--muted-3)",
+                }}
+              >
                 Adresse
               </p>
               <p style={{ margin: 0, fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}>

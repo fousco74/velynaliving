@@ -31,7 +31,10 @@ export const SiteHeader = () => {
         <Link href="/" className="brand">
           <Image src="/assets/logo.jpeg" alt="MH Velyná Group" width={34} height={34} priority />
           <span>
-            VELYNÁ<em className="italic" style={{ opacity: 0.75 }}>living</em>
+            VELYNÁ
+            <em className="italic" style={{ opacity: 0.75 }}>
+              living
+            </em>
           </span>
         </Link>
 

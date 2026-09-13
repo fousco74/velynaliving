@@ -142,7 +142,9 @@ export const AddToCart = ({ product }: { product: Product }) => {
                 style={{ width: 92, aspectRatio: "3 / 4", objectFit: "cover" }}
               />
               <div>
-                <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 23 }}>{product.name}</p>
+                <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 23 }}>
+                  {product.name}
+                </p>
                 <p className="eyebrow" style={{ marginTop: 8, letterSpacing: "0.2em" }}>
                   {product.capacity} × {quantity}
                 </p>

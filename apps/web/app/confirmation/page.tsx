@@ -25,9 +25,7 @@ function ConfirmationContent() {
 
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(32px, 5vw, 64px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(32px, 5vw, 64px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Commande enregistrée
         </p>
@@ -92,7 +90,12 @@ function ConfirmationContent() {
                       alt={item.productName}
                       width={160}
                       height={213}
-                      style={{ width: "100%", aspectRatio: "3 / 4", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        aspectRatio: "3 / 4",
+                        objectFit: "cover",
+                      }}
                     />
                     <div>
                       <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 21 }}>
@@ -134,7 +137,11 @@ function ConfirmationContent() {
 
           {order && (
             <aside
-              style={{ gridColumn: "9 / span 4", borderTop: "1px solid var(--line)", paddingTop: 24 }}
+              style={{
+                gridColumn: "9 / span 4",
+                borderTop: "1px solid var(--line)",
+                paddingTop: 24,
+              }}
             >
               <p className="eyebrow" style={{ marginBottom: 18, letterSpacing: "0.26em" }}>
                 Livraison
@@ -142,7 +149,9 @@ function ConfirmationContent() {
               <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 22 }}>
                 {order.firstName} {order.lastName}
               </p>
-              <p style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}>
+              <p
+                style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}
+              >
                 {order.address && (
                   <>
                     {order.address}
@@ -153,7 +162,9 @@ function ConfirmationContent() {
                 <br />
                 {order.phone}
               </p>
-              <p style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}>
+              <p
+                style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}
+              >
                 {order.email}
               </p>
               <p
@@ -166,7 +177,8 @@ function ConfirmationContent() {
                   color: "var(--muted)",
                 }}
               >
-                Une question sur cette commande ? Écrivez-nous en précisant le numéro {order.number}.
+                Une question sur cette commande ? Écrivez-nous en précisant le numéro {order.number}
+                .
               </p>
             </aside>
           )}

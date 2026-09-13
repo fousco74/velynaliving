@@ -43,9 +43,7 @@ export default function SuiviPage() {
 
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Suivi de commande
         </p>
@@ -145,7 +143,12 @@ export default function SuiviPage() {
             {cancelled ? (
               <p
                 className="lead"
-                style={{ marginTop: 30, color: "var(--error)", fontFamily: "var(--serif)", fontSize: 22 }}
+                style={{
+                  marginTop: 30,
+                  color: "var(--error)",
+                  fontFamily: "var(--serif)",
+                  fontSize: 22,
+                }}
               >
                 Commande {ORDER_STATUS_LABELS[cancelled].toLowerCase()}.
               </p>

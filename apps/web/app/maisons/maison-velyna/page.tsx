@@ -50,10 +50,10 @@ export default async function MaisonVelynaPage() {
             className="lead"
             style={{ margin: "28px 0 0", maxWidth: "52ch", fontSize: "clamp(18px, 1.5vw, 21px)" }}
           >
-            Une maison dédiée aux fragrances d&apos;intérieur et aux objets parfumés qui transforment
-            chaque espace en une expérience sensorielle unique. Des parfums d&apos;ambiance imaginés
-            comme des signatures olfactives élégantes, capables de créer des souvenirs et des
-            émotions.
+            Une maison dédiée aux fragrances d&apos;intérieur et aux objets parfumés qui
+            transforment chaque espace en une expérience sensorielle unique. Des parfums
+            d&apos;ambiance imaginés comme des signatures olfactives élégantes, capables de créer
+            des souvenirs et des émotions.
           </p>
         </div>
         <figure style={{ gridColumn: "8 / span 5", margin: 0 }}>
@@ -106,6 +106,7 @@ export default async function MaisonVelynaPage() {
                 sizes="(max-width: 860px) 100vw, 50vw"
                 style={{
                   width: "100%",
+                  height: "auto",
                   aspectRatio: "4 / 5",
                   objectFit: "cover",
                   background: "#ede7df",

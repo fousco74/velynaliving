@@ -13,8 +13,7 @@ const SORTS = [
 ];
 
 /** ?house=a&house=b arrive sous forme de tableau : on ne garde que la 1re valeur. */
-const first = (value: string | string[] | undefined) =>
-  Array.isArray(value) ? value[0] : value;
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function BoutiquePage({ searchParams }: PageProps<"/boutique">) {
   const params = await searchParams;
@@ -81,7 +80,9 @@ export default async function BoutiquePage({ searchParams }: PageProps<"/boutiqu
             })}
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "12px 24px" }}>
+          <div
+            style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "12px 24px" }}
+          >
             <span className="tag" style={{ color: "var(--muted-3)", letterSpacing: "0.22em" }}>
               Trier par
             </span>

@@ -71,9 +71,7 @@ export default function FaqPage() {
 
   return (
     <>
-      <section
-        style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}
-      >
+      <section style={{ padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(28px, 4vw, 52px)" }}>
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Questions fréquentes
         </p>
@@ -105,7 +103,11 @@ export default function FaqPage() {
             {FAQS.map((item, index) => {
               const isOpen = open === index;
               return (
-                <div key={item.q} className="faq-item" style={{ borderTop: "1px solid var(--line)" }}>
+                <div
+                  key={item.q}
+                  className="faq-item"
+                  style={{ borderTop: "1px solid var(--line)" }}
+                >
                   <button
                     type="button"
                     aria-expanded={isOpen}

@@ -63,10 +63,11 @@ function CommandeContent() {
     promo,
   );
 
-  const set = (key: keyof Form) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((current) => ({ ...current, [key]: event.target.value }));
-    setErrors((current) => ({ ...current, [key]: undefined }));
-  };
+  const set =
+    (key: keyof Form) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm((current) => ({ ...current, [key]: event.target.value }));
+      setErrors((current) => ({ ...current, [key]: undefined }));
+    };
 
   const validateStep = () => {
     const next: Partial<Record<keyof Form, string>> = {};
@@ -178,10 +179,40 @@ function CommandeContent() {
                   Vos coordonnées
                 </h2>
                 <div className="form-grid">
-                  <Field id="firstName" label="Prénom" placeholder="Aïcha" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
-                  <Field id="lastName" label="Nom" placeholder="Konaté" value={form.lastName} onChange={set("lastName")} error={errors.lastName} />
-                  <Field id="email" label="E-mail" type="email" placeholder="prenom@exemple.com" value={form.email} onChange={set("email")} error={errors.email} />
-                  <Field id="phone" label="Téléphone" type="tel" placeholder="+225 07 00 00 00 00" value={form.phone} onChange={set("phone")} error={errors.phone} />
+                  <Field
+                    id="firstName"
+                    label="Prénom"
+                    placeholder="Aïcha"
+                    value={form.firstName}
+                    onChange={set("firstName")}
+                    error={errors.firstName}
+                  />
+                  <Field
+                    id="lastName"
+                    label="Nom"
+                    placeholder="Konaté"
+                    value={form.lastName}
+                    onChange={set("lastName")}
+                    error={errors.lastName}
+                  />
+                  <Field
+                    id="email"
+                    label="E-mail"
+                    type="email"
+                    placeholder="prenom@exemple.com"
+                    value={form.email}
+                    onChange={set("email")}
+                    error={errors.email}
+                  />
+                  <Field
+                    id="phone"
+                    label="Téléphone"
+                    type="tel"
+                    placeholder="+225 07 00 00 00 00"
+                    value={form.phone}
+                    onChange={set("phone")}
+                    error={errors.phone}
+                  />
                 </div>
               </>
             )}
@@ -193,11 +224,22 @@ function CommandeContent() {
                 </h2>
                 <div className="form-grid">
                   <div className="span2">
-                    <Field id="address" label="Adresse" placeholder="Rue des Jardins, Résidence Velyná, Villa 4" value={form.address} onChange={set("address")} error={errors.address} />
+                    <Field
+                      id="address"
+                      label="Adresse"
+                      placeholder="Rue des Jardins, Résidence Velyná, Villa 4"
+                      value={form.address}
+                      onChange={set("address")}
+                      error={errors.address}
+                    />
                   </div>
                   <div className="field">
                     <label htmlFor="municipality">Commune</label>
-                    <select id="municipality" value={form.municipality} onChange={set("municipality")}>
+                    <select
+                      id="municipality"
+                      value={form.municipality}
+                      onChange={set("municipality")}
+                    >
                       <option value="">Choisir une commune</option>
                       {COMMUNES_ABIDJAN.map((commune) => (
                         <option key={commune} value={commune}>
@@ -207,7 +249,13 @@ function CommandeContent() {
                     </select>
                     {errors.municipality && <p className="field-error">{errors.municipality}</p>}
                   </div>
-                  <Field id="instruction" label="Instructions" placeholder="Portail vert, appeler en arrivant" value={form.instruction} onChange={set("instruction")} />
+                  <Field
+                    id="instruction"
+                    label="Instructions"
+                    placeholder="Portail vert, appeler en arrivant"
+                    value={form.instruction}
+                    onChange={set("instruction")}
+                  />
                 </div>
 
                 <p className="eyebrow" style={{ margin: "36px 0 16px", letterSpacing: "0.26em" }}>
@@ -285,7 +333,11 @@ function CommandeContent() {
               }}
             >
               {step > 0 && (
-                <button type="button" className="btn btn-soft" onClick={() => setStep((s) => s - 1)}>
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => setStep((s) => s - 1)}
+                >
                   Étape précédente
                 </button>
               )}
@@ -334,11 +386,19 @@ function CommandeContent() {
                   alt={line.name}
                   width={120}
                   height={160}
-                  style={{ width: "100%", aspectRatio: "3 / 4", objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: "3 / 4",
+                    objectFit: "cover",
+                  }}
                 />
                 <div>
                   <p style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 18 }}>{line.name}</p>
-                  <p className="eyebrow" style={{ marginTop: 6, fontSize: 9, letterSpacing: "0.2em" }}>
+                  <p
+                    className="eyebrow"
+                    style={{ marginTop: 6, fontSize: 9, letterSpacing: "0.2em" }}
+                  >
                     {line.capacity} × {line.quantity}
                   </p>
                 </div>

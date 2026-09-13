@@ -111,11 +111,20 @@ const BrandRow = ({
         width={900}
         height={675}
         sizes="(max-width: 860px) 100vw, 50vw"
-        style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover", background: "#ede7df" }}
+        style={{
+          width: "100%",
+          height: "auto",
+          aspectRatio: "4 / 3",
+          objectFit: "cover",
+          background: "#ede7df",
+        }}
       />
     </div>
     <div style={{ gridRow: 1, gridColumn: txtCol }}>
-      <p className="eyebrow" style={{ marginBottom: 20, letterSpacing: "0.3em", color: eyebrowColor }}>
+      <p
+        className="eyebrow"
+        style={{ marginBottom: 20, letterSpacing: "0.3em", color: eyebrowColor }}
+      >
         {eyebrow}
       </p>
       <h2
