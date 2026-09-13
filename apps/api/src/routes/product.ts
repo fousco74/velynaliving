@@ -16,6 +16,15 @@ const CARD_FIELDS = {
   house: { select: { name: true, slug: true } },
 } as const;
 
+const EDITORIAL_FIELDS = {
+  headNote: true,
+  heartNote: true,
+  backgroundNote: true,
+  ambiance: true,
+  description: true,
+  piece: true,
+} as const;
+
 const SORTS = {
   nouveaute: { newRank: "asc" },
   "prix-asc": { price: "asc" },
@@ -30,11 +39,11 @@ productRouter.get("/", async (req, res) => {
     return res.status(400).json({ error: "Paramètres invalides.", issues: parsed.error.issues });
   }
 
-  const { house, sort } = parsed.data;
+  const { house, sort, detail } = parsed.data;
 
   const products = await prisma.product.findMany({
     where: { status: "ONLINE", ...(house && { house: { slug: house } }) },
-    select: CARD_FIELDS,
+    select: detail === "1" ? { ...CARD_FIELDS, ...EDITORIAL_FIELDS } : CARD_FIELDS,
     orderBy: SORTS[sort],
   });
 
@@ -46,16 +55,11 @@ productRouter.get("/:slug", async (req, res) => {
     where: { slug: req.params.slug, status: "ONLINE" },
     select: {
       ...CARD_FIELDS,
+      ...EDITORIAL_FIELDS,
       imgDetail: true,
       detailBackground: true,
       inkColor: true,
-      headNote: true,
-      heartNote: true,
-      backgroundNote: true,
-      piece: true,
       usage: true,
-      ambiance: true,
-      description: true,
     },
   });
 

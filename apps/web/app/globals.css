@@ -680,6 +680,51 @@ textarea {
   text-transform: uppercase;
 }
 
+/* ------------------------------------------------- pages marques & divers */
+
+.kai-hero {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  min-height: min(560px, 68vh);
+}
+
+.faq-item button {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 20px 0;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 20px;
+  align-items: baseline;
+  text-align: left;
+}
+
+.faq-answer {
+  padding: 0 0 22px 116px;
+}
+
+.stat-value {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(30px, 3.6vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.timeline-step {
+  padding-top: 16px;
+}
+
+.timeline-step[data-done="true"] {
+  border-top: 2px solid var(--ink);
+}
+
+.timeline-step[data-done="false"] {
+  border-top: 1px solid var(--line);
+}
+
 /* ------------------------------------------------------------ responsive */
 
 /* La grille reste à 12 colonnes jusqu'à 860px : les composants positionnent
@@ -709,6 +754,31 @@ textarea {
 @media (max-width: 860px) {
   body {
     font-size: 17px;
+  }
+
+  .kai-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .parfum-row {
+    min-height: 0 !important;
+  }
+
+  .parfum-row > div {
+    margin-top: 0 !important;
+  }
+
+  .faq-item button {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .faq-item button > span:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .faq-answer {
+    padding-left: 0;
   }
 
   .header-bar {

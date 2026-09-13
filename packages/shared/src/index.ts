@@ -139,6 +139,8 @@ export const houseSchema = z.object({
 export const productQuerySchema = z.object({
   house: z.string().trim().min(1).optional(),
   sort: z.enum(["nouveaute", "prix-asc", "prix-desc", "nom"]).default("nouveaute"),
+  /** Ajoute les champs éditoriaux (notes, ambiance) utilisés par les pages marques. */
+  detail: z.enum(["0", "1"]).default("0"),
 });
 
 /**

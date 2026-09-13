@@ -14,17 +14,20 @@ export type ProductCard = {
   house: House;
 };
 
-export type Product = ProductCard & {
-  imgDetail: string | null;
-  detailBackground: string | null;
-  inkColor: string | null;
+export type ProductEditorial = ProductCard & {
   headNote: string | null;
   heartNote: string | null;
   backgroundNote: string | null;
-  piece: string | null;
-  usage: string | null;
   ambiance: string | null;
   description: string | null;
+  piece: string | null;
+};
+
+export type Product = ProductEditorial & {
+  imgDetail: string | null;
+  detailBackground: string | null;
+  inkColor: string | null;
+  usage: string | null;
 };
 
 export type OrderItem = {
@@ -81,14 +84,20 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   return payload.data as T;
 };
 
-export const getProducts = (params?: { house?: string; sort?: string }) => {
+const productsUrl = (params?: { house?: string; sort?: string; detail?: boolean }) => {
   const query = new URLSearchParams();
   if (params?.house) query.set("house", params.house);
   if (params?.sort) query.set("sort", params.sort);
-  const suffix = query.size ? `?${query}` : "";
-
-  return request<ProductCard[]>(`/products${suffix}`);
+  if (params?.detail) query.set("detail", "1");
+  return `/products${query.size ? `?${query}` : ""}`;
 };
+
+export const getProducts = (params?: { house?: string; sort?: string }) =>
+  request<ProductCard[]>(productsUrl(params));
+
+/** Variante enrichie : notes olfactives et textes, pour les pages marques. */
+export const getProductsDetailed = (params?: { house?: string; sort?: string }) =>
+  request<ProductEditorial[]>(productsUrl({ ...params, detail: true }));
 
 export const getProduct = (slug: string) => request<Product>(`/products/${slug}`);
 
