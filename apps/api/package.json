@@ -8,7 +8,8 @@
     "db:up": "docker compose up -d postgres",
     "db:seed": "tsx prisma/seed.ts",
     "admin:create": "tsx prisma/create-admin.ts",
-    "journal:seed": "tsx prisma/seed-journal.ts"
+    "journal:seed": "tsx prisma/seed-journal.ts",
+    "uploads:sweep": "tsx prisma/sweep-uploads.ts"
   },
   "type": "module",
   "dependencies": {
