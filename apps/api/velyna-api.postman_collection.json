@@ -1,0 +1,1757 @@
+{
+  "info": {
+    "_postman_id": "b3f1c7a2-4d5e-4a91-9c28-velyna000001",
+    "name": "Velyna Living — API",
+    "description": "Collection complète de l'API Velyna Living (apps/api, Express 5 + Prisma 7 + Zod 4).\n\n**Base URL par défaut** : http://localhost:4001\n\n## Conventions de réponse\n\n- Succès : `{ \"data\": ... }`\n- Échec : `{ \"error\": \"<chaîne>\" }`, plus `issues` (tableau Zod) quand la validation échoue.\n- En `NODE_ENV=development` uniquement, les 500 ajoutent un champ `detail`.\n\n## Devise\n\nTous les montants sont des **entiers en XOF** (F CFA, pas de décimales).\n\n## Règle non négociable\n\nAucun montant ne vient du client. `POST /orders` ne reçoit que `[{slug, quantity}]` et recalcule\nsous-total, remise, livraison et total via `computeTotals` (packages/shared).\n\n## Authentification\n\nLes routes `/admin/*` et `POST /houses` exigent un cookie de session httpOnly.\nLancez **POST /auth/login** une fois : Postman garde le cookie pour toute la collection.\n\n```bash\ncd apps/api && pnpm admin:create\n```\n\n## Prérequis\n\n```bash\npnpm db:up\ncd apps/api && pnpm exec prisma migrate deploy && pnpm exec prisma generate && pnpm db:seed\npnpm dev\n```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4001",
+      "type": "string"
+    },
+    {
+      "key": "houseSlug",
+      "value": "maison-velyna",
+      "type": "string"
+    },
+    {
+      "key": "productSlug",
+      "value": "santal-atelier",
+      "type": "string"
+    },
+    {
+      "key": "orderNumber",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderEmail",
+      "value": "awa.kone@example.ci",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Système",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Sonde de disponibilité. Ne touche pas la base : répond même si Postgres est éteint.\nRenvoie la devise de l'API pour vérifier que `@velyna/shared` est bien résolu."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"ok\",\n  \"currency\": \"XOF\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /route-inexistante (404 global)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/route-inexistante",
+              "host": ["{{baseUrl}}"],
+              "path": ["route-inexistante"]
+            },
+            "description": "Vérifie le handler `notFound` d'app.ts : toute route non déclarée renvoie 404 avec le format d'erreur standard."
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/route-inexistante",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["route-inexistante"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Ressource introuvable.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Ouvre une session administrateur.\n\n### Body (loginSchema)\n\n| Champ | Contrainte |\n|---|---|\n| `email` | e-mail valide |\n| `password` | non vide |\n\n### Réponse\n\nDépose un cookie **httpOnly** `velyna_admin` — un jeton signé HMAC-SHA256, valable `SESSION_HOURS` (12 h par défaut). Postman le conserve automatiquement : toutes les requêtes du dossier Administration passent ensuite sans réglage.\n\n### Codes\n\n- `200` connecté · `400` body invalide · `401` identifiants faux **ou compte non ADMIN**\n\n### Note de sécurité\n\nLe 401 est identique que l'e-mail existe ou non, et la vérification du mot de passe tourne même sans compte trouvé (empreinte factice) : sans cela, le temps de réponse révélerait quelles adresses sont enregistrées.\n\nCompte de développement créé par `pnpm admin:create`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@velyna.ci\",\n  \"password\": \"velyna-admin-2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"email\": \"admin@velyna.ci\", \"role\": \"ADMIN\" }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"E-mail ou mot de passe incorrect.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /auth/me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Renvoie le compte de la session en cours. Le back-office l'appelle au chargement pour décider s'il redirige vers `/admin/login`.\n\nSi le compte a été supprimé ou rétrogradé depuis l'émission du jeton, la session est fermée côté serveur et la réponse est un `401`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"email\": \"admin@velyna.ci\", \"role\": \"ADMIN\" }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Authentification requise.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Efface le cookie de session.\n\nLe jeton étant sans état, il reste cryptographiquement valide jusqu'à son expiration : la déconnexion supprime le cookie du navigateur, elle ne révoque pas le jeton. Limite assumée et documentée dans `src/lib/session.ts`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"ok\": true }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Maisons",
+      "item": [
+        {
+          "name": "GET /houses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/houses",
+              "host": ["{{baseUrl}}"],
+              "path": ["houses"]
+            },
+            "description": "Liste les maisons, triées par nom croissant.\nProjection volontairement minimale : `name` et `slug` uniquement.\n\n> La création est passée sous **POST /admin/houses** le 13/09/2026 : une seule façon d'écrire le catalogue, toutes sous la même garde."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/houses",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["houses"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": [\n    { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" },\n    { \"name\": \"Velynákaï\", \"slug\": \"velyna-kai\" }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Produits",
+      "item": [
+        {
+          "name": "GET /products (tous)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Liste les produits **en ligne uniquement** (`status = ONLINE`). Les brouillons ne sortent jamais de l'API publique.\n\nSans paramètre, le tri par défaut est `nouveaute` (`newRank` croissant)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/products",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["products"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": [\n    {\n      \"slug\": \"santal-atelier\",\n      \"name\": \"Santal Atelier\",\n      \"ref\": \"MV-SA-250\",\n      \"price\": 29900,\n      \"capacity\": \"250 ml\",\n      \"stock\": 42,\n      \"img\": \"/assets/santal-atelier.jpeg\",\n      \"newRank\": 1,\n      \"house\": { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /products (filtré + trié + détail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?house={{houseSlug}}&sort=prix-asc&detail=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "house",
+                  "value": "{{houseSlug}}",
+                  "description": "Slug de maison. Optionnel, string non vide après trim."
+                },
+                {
+                  "key": "sort",
+                  "value": "prix-asc",
+                  "description": "nouveaute (défaut) | prix-asc | prix-desc | nom"
+                },
+                {
+                  "key": "detail",
+                  "value": "1",
+                  "description": "0 (défaut) | 1 — ajoute les champs éditoriaux"
+                }
+              ]
+            },
+            "description": "### Query (productQuerySchema)\n\n| Param | Valeurs | Défaut |\n|---|---|---|\n| `house` | slug de maison, string non vide | — (toutes) |\n| `sort` | `nouveaute`, `prix-asc`, `prix-desc`, `nom` | `nouveaute` |\n| `detail` | `0`, `1` | `0` |\n\n`detail=1` ajoute : `headNote`, `heartNote`, `backgroundNote`, `ambiance`, `description`, `piece`.\nUtilisé par les pages marques qui affichent les notes olfactives dans la grille.\n\nUne valeur hors énumération renvoie **400** — un `sort=prix` invalide n'est pas silencieusement ignoré."
+          },
+          "response": [
+            {
+              "name": "200 OK (detail=1)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/products?house=maison-velyna&sort=prix-asc&detail=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["products"],
+                  "query": [
+                    {
+                      "key": "house",
+                      "value": "maison-velyna"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "prix-asc"
+                    },
+                    {
+                      "key": "detail",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": [\n    {\n      \"slug\": \"santal-atelier\",\n      \"name\": \"Santal Atelier\",\n      \"ref\": \"MV-SA-250\",\n      \"price\": 29900,\n      \"capacity\": \"250 ml\",\n      \"stock\": 42,\n      \"img\": \"/assets/santal-atelier.jpeg\",\n      \"newRank\": 1,\n      \"house\": { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" },\n      \"headNote\": \"Bergamote\",\n      \"heartNote\": \"Santal\",\n      \"backgroundNote\": \"Musc blanc\",\n      \"ambiance\": \"Atelier\",\n      \"description\": \"Un bois clair, poncé, qui garde la chaleur de la main.\",\n      \"piece\": \"Salon\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request (sort invalide)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/products?sort=prix",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["products"],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "prix"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Paramètres invalides.\",\n  \"issues\": [\n    {\n      \"code\": \"invalid_value\",\n      \"values\": [\"nouveaute\", \"prix-asc\", \"prix-desc\", \"nom\"],\n      \"path\": [\"sort\"],\n      \"message\": \"Invalid option: expected one of \\\"nouveaute\\\"|\\\"prix-asc\\\"|\\\"prix-desc\\\"|\\\"nom\\\"\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /products/:slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productSlug}}"],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "santal-atelier",
+                  "description": "Slug du produit"
+                }
+              ]
+            },
+            "description": "Fiche produit complète. Renvoie tout `CARD_FIELDS` + `EDITORIAL_FIELDS`, plus les champs propres à la fiche :\n`imgDetail`, `detailBackground`, `inkColor`, `usage`.\n\nUn produit en `DRAFT` renvoie **404**, comme un slug inconnu."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/products/santal-atelier",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["products", "santal-atelier"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"slug\": \"santal-atelier\",\n    \"name\": \"Santal Atelier\",\n    \"ref\": \"MV-SA-250\",\n    \"price\": 29900,\n    \"capacity\": \"250 ml\",\n    \"stock\": 42,\n    \"img\": \"/assets/santal-atelier.jpeg\",\n    \"newRank\": 1,\n    \"house\": { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" },\n    \"headNote\": \"Bergamote\",\n    \"heartNote\": \"Santal\",\n    \"backgroundNote\": \"Musc blanc\",\n    \"ambiance\": \"Atelier\",\n    \"description\": \"Un bois clair, poncé, qui garde la chaleur de la main.\",\n    \"piece\": \"Salon\",\n    \"imgDetail\": \"/assets/santal-atelier.jpeg\",\n    \"detailBackground\": \"#EFE9E1\",\n    \"inkColor\": \"#1B1A18\",\n    \"usage\": \"Vaporiser à 20 cm des textiles.\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/products/slug-inconnu",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["products", "slug-inconnu"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Produit introuvable.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Commandes",
+      "item": [
+        {
+          "name": "POST /orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('orderNumber', body.data.number);",
+                  "  pm.collectionVariables.set('orderEmail', body.data.email);",
+                  "  console.log('Commande enregistrée :', body.data.number);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"slug\": \"santal-atelier\", \"quantity\": 1 }\n  ],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"address\": \"Rue des Jardins, Cocody\",\n  \"municipality\": \"Cocody\",\n  \"instruction\": \"Appeler avant de passer\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"WAVE\",\n  \"promoCode\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Enregistre une commande **en invité** (aucun compte client).\n\n### Body (orderInputSchema)\n\n| Champ | Type | Contrainte |\n|---|---|---|\n| `items` | array | **min 1** — `{ slug: string non vide, quantity: entier 1..99 }` |\n| `firstName` | string | requis, trim, non vide |\n| `lastName` | string | requis, trim, non vide |\n| `email` | string | e-mail valide (stocké en minuscules) |\n| `phone` | string | **`+225 07 00 00 00 00`** — espaces obligatoires |\n| `address` | string | **optionnel**, trim, non vide si fourni |\n| `municipality` | enum | Cocody, Plateau, Marcory, Treichville, Yopougon, Abobo, Adjamé, Attécoubé, Koumassi, Port-Bouët, Bingerville, Songon, Anyama, Autre |\n| `instruction` | string | optionnel, max 500 |\n| `deliveryMethod` | enum | `ABIDJAN` (2 000) · `INTERIOR` (5 000) · `PICKUP` (0) |\n| `operator` | enum | `ORANGE`, `MTN`, `MOOV_MONEY`, `WAVE`, `CARD`, `CASH_ON_DELIVERY` |\n| `promoCode` | string | optionnel, max 40 — seul `VELYNA10` (-10 %) est reconnu |\n\n### ⚠️ Aucun montant dans le body\n\nLe client envoie **uniquement** des slugs et des quantités. L'API relit les prix en base et calcule via `computeTotals` :\n\n1. `subTotal` = Σ (prix en base × quantité)\n2. `discount` = 10 % arrondi si `promoCode` vaut VELYNA10\n3. livraison **offerte** si `subTotal - discount >= 50 000` — la remise s'applique **avant** le seuil\n4. `total` = `subTotal - discount + deliveryCost`\n\n### Effets de bord\n\n- `Customer` upserté sur l'e-mail (les coordonnées les plus récentes écrasent les anciennes)\n- Stock décrémenté par `updateMany` conditionnel dans une `$transaction` — anti-survente\n- `Payment` créé avec `status = PENDING` : **aucune intégration de paiement en V1**\n- Numéro `VL-<année>-<rang sur 4>`, jusqu'à 5 tentatives en cas de collision\n\n### Codes\n\n- `201` créée · `400` body invalide ou slug inconnu · `409` stock insuffisant · `503` 5 collisions de numéro\n\n### Test attaché\n\nEn 201, `orderNumber` et `orderEmail` sont écrits dans les variables de collection : le suivi de commande s'enchaîne sans copier-coller."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [{ \"slug\": \"santal-atelier\", \"quantity\": 1 }],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"address\": \"Rue des Jardins, Cocody\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"WAVE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"number\": \"VL-2026-0001\",\n    \"status\": \"NEW\",\n    \"createdAt\": \"2026-09-13T15:42:10.482Z\",\n    \"firstName\": \"Awa\",\n    \"lastName\": \"Koné\",\n    \"email\": \"awa.kone@example.ci\",\n    \"phone\": \"+225 07 00 00 00 00\",\n    \"address\": \"Rue des Jardins, Cocody\",\n    \"municipality\": \"Cocody\",\n    \"instruction\": null,\n    \"deliveryMethod\": \"ABIDJAN\",\n    \"subTotal\": 29900,\n    \"discount\": 0,\n    \"promoCode\": null,\n    \"deliveryCost\": 2000,\n    \"total\": 31900,\n    \"items\": [\n      {\n        \"quantity\": 1,\n        \"unitPrice\": 29900,\n        \"productName\": \"Santal Atelier\",\n        \"productRef\": \"MV-SA-250\",\n        \"product\": {\n          \"slug\": \"santal-atelier\",\n          \"img\": \"/assets/santal-atelier.jpeg\",\n          \"capacity\": \"250 ml\"\n        }\n      }\n    ],\n    \"payment\": {\n      \"operator\": \"WAVE\",\n      \"status\": \"PENDING\",\n      \"amount\": 31900\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request (téléphone au mauvais format)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [{ \"slug\": \"santal-atelier\", \"quantity\": 1 }],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"0700000000\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"WAVE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Commande invalide.\",\n  \"issues\": [\n    {\n      \"origin\": \"string\",\n      \"code\": \"invalid_format\",\n      \"format\": \"regex\",\n      \"pattern\": \"/^\\\\+225 \\\\d{2} \\\\d{2} \\\\d{2} \\\\d{2} \\\\d{2}$/\",\n      \"path\": [\"phone\"],\n      \"message\": \"Format attendu : +225 07 00 00 00 00\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request (slug inconnu ou produit DRAFT)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [{ \"slug\": \"parfum-fantome\", \"quantity\": 1 }],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"PICKUP\",\n  \"operator\": \"CASH_ON_DELIVERY\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Produit indisponible : parfum-fantome.\"\n}"
+            },
+            {
+              "name": "409 Conflict (stock insuffisant)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [{ \"slug\": \"minuit-poudre\", \"quantity\": 1 }],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"WAVE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Stock insuffisant pour Minuit Poudré (0 restant).\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /orders — promo VELYNA10 + livraison offerte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"slug\": \"santal-atelier\", \"quantity\": 2 }\n  ],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"address\": \"Rue des Jardins, Cocody\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"ORANGE\",\n  \"promoCode\": \"velyna10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Cas limite à conserver : il verrouille la règle métier du seuil.\n\n```\nsubTotal        2 × 29 900 = 59 800\ndiscount        10 % arrondi =  5 980\nsubTotal - discount = 53 820  ≥ 50 000  →  livraison OFFERTE\ndeliveryCost                        0   (au lieu de 2 000)\ntotal                          53 820\n```\n\nLe code est envoyé en minuscules (`velyna10`) : `isPromoCode` fait `trim().toUpperCase()`, il est donc accepté et **stocké en majuscules**.\n\nDécision figée : la remise s'applique **avant** le seuil — le client ne peut pas atteindre la gratuité grâce à un montant qu'il ne paiera pas."
+          },
+          "response": [
+            {
+              "name": "201 Created (livraison offerte)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [{ \"slug\": \"santal-atelier\", \"quantity\": 2 }],\n  \"firstName\": \"Awa\",\n  \"lastName\": \"Koné\",\n  \"email\": \"awa.kone@example.ci\",\n  \"phone\": \"+225 07 00 00 00 00\",\n  \"municipality\": \"Cocody\",\n  \"deliveryMethod\": \"ABIDJAN\",\n  \"operator\": \"ORANGE\",\n  \"promoCode\": \"velyna10\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"number\": \"VL-2026-0002\",\n    \"status\": \"NEW\",\n    \"subTotal\": 59800,\n    \"discount\": 5980,\n    \"promoCode\": \"VELYNA10\",\n    \"deliveryCost\": 0,\n    \"total\": 53820,\n    \"payment\": { \"operator\": \"ORANGE\", \"status\": \"PENDING\", \"amount\": 53820 }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /orders/:number?email=",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderNumber}}?email={{orderEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderNumber}}"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{orderEmail}}",
+                  "description": "E-mail de la commande. Requis — sans lui, 400."
+                }
+              ]
+            },
+            "description": "Suivi de commande en invité. Le couple **numéro + e-mail** fait office d'authentification.\n\nLance d'abord `POST /orders` : le test attaché remplit `{{orderNumber}}` et `{{orderEmail}}` automatiquement.\n\n### Codes\n\n- `200` commande trouvée (même projection `ORDER_VIEW` que la création)\n- `400` numéro ou e-mail manquant / e-mail mal formé\n- `404` **numéro inconnu OU e-mail non concordant**\n\n### Choix de sécurité\n\nLes deux cas d'échec renvoient le même 404 et le même message. Distinguer « commande inexistante » de « mauvais e-mail » confirmerait l'existence d'une commande à un inconnu et ouvrirait l'énumération des numéros, qui sont séquentiels."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/orders/VL-2026-0001?email=awa.kone@example.ci",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders", "VL-2026-0001"],
+                  "query": [
+                    {
+                      "key": "email",
+                      "value": "awa.kone@example.ci"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"number\": \"VL-2026-0001\",\n    \"status\": \"NEW\",\n    \"createdAt\": \"2026-09-13T15:42:10.482Z\",\n    \"firstName\": \"Awa\",\n    \"lastName\": \"Koné\",\n    \"email\": \"awa.kone@example.ci\",\n    \"phone\": \"+225 07 00 00 00 00\",\n    \"address\": \"Rue des Jardins, Cocody\",\n    \"municipality\": \"Cocody\",\n    \"instruction\": null,\n    \"deliveryMethod\": \"ABIDJAN\",\n    \"subTotal\": 29900,\n    \"discount\": 0,\n    \"promoCode\": null,\n    \"deliveryCost\": 2000,\n    \"total\": 31900,\n    \"items\": [\n      {\n        \"quantity\": 1,\n        \"unitPrice\": 29900,\n        \"productName\": \"Santal Atelier\",\n        \"productRef\": \"MV-SA-250\",\n        \"product\": { \"slug\": \"santal-atelier\", \"img\": \"/assets/santal-atelier.jpeg\", \"capacity\": \"250 ml\" }\n      }\n    ],\n    \"payment\": { \"operator\": \"WAVE\", \"status\": \"PENDING\", \"amount\": 31900 }\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request (email manquant)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/orders/VL-2026-0001",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders", "VL-2026-0001"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Numéro de commande et e-mail requis.\"\n}"
+            },
+            {
+              "name": "404 Not Found (numéro inconnu ou e-mail non concordant)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/orders/VL-2026-9999?email=inconnu@example.ci",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["orders", "VL-2026-9999"],
+                  "query": [
+                    {
+                      "key": "email",
+                      "value": "inconnu@example.ci"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Aucune commande ne correspond à ces informations.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Administration (session requise)",
+      "item": [
+        {
+          "name": "GET /admin/stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stats"]
+            },
+            "description": "Agrégats du tableau de bord, en 6 requêtes parallèles.\n\n- `revenue` — somme des totaux **hors** commandes annulées et remboursées : ce sont des commandes enregistrées, pas des ventes\n- `orders.byStatus` — comptage par statut\n- `lowStock` — produits en ligne avec `0 < stock <= 10`\n- `outOfStock` — produits en ligne à `stock = 0`\n- `pendingPayments` — paiements à confirmer à la main (V1 sans opérateur)\n- `recent` — les 6 dernières commandes"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"orders\": { \"total\": 4, \"byStatus\": { \"NEW\": 2, \"PREPARING\": 1, \"SHIPPED\": 1 } },\n    \"revenue\": 223520,\n    \"lowStock\": 1,\n    \"outOfStock\": 1,\n    \"pendingPayments\": 3,\n    \"recent\": [],\n    \"lowStockThreshold\": 10\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders?status=NEW&q=&page=1&perPage=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "NEW",
+                  "description": "Optionnel"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Numéro, nom ou e-mail"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "perPage",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Liste paginée des commandes, les plus récentes d'abord.\n\n### Query (adminOrderQuerySchema)\n\n| Param | Valeurs | Défaut |\n|---|---|---|\n| `status` | un des 6 statuts | — (tous) |\n| `q` | recherche libre, max 120 car. | — |\n| `page` | entier > 0 | `1` |\n| `perPage` | entier 1..100 | `20` |\n\n`q` cherche en insensible à la casse sur le **numéro**, l'**e-mail**, le **prénom** et le **nom**.\n\nRéponse : `{ orders, total, page, perPage, pages }`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"orders\": [\n      {\n        \"number\": \"VL-2026-0004\",\n        \"status\": \"NEW\",\n        \"createdAt\": \"2026-09-13T17:20:04.118Z\",\n        \"firstName\": \"Serge\",\n        \"lastName\": \"Kouamé\",\n        \"email\": \"serge.kouame@example.ci\",\n        \"municipality\": \"Cocody\",\n        \"deliveryMethod\": \"INTERIOR\",\n        \"total\": 34900,\n        \"payment\": { \"operator\": \"MTN\", \"status\": \"PENDING\" },\n        \"_count\": { \"items\": 1 }\n      }\n    ],\n    \"total\": 2,\n    \"page\": 1,\n    \"perPage\": 20,\n    \"pages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/orders/:number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "{{orderNumber}}"]
+            },
+            "description": "Fiche complète d'une commande côté admin : mêmes champs que le suivi client, plus `updatedAt` et la `reference` de paiement.\n\nContrairement à `GET /orders/:number`, **aucun e-mail n'est demandé** — la session admin fait foi."
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Commande introuvable.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/orders/:number",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "{{orderNumber}}"]
+            },
+            "description": "Fait avancer une commande dans son cycle de vie.\n\n### Transitions autorisées\n\n```\nNEW        → PREPARING, CANCELLED\nPREPARING  → SHIPPED, CANCELLED\nSHIPPED    → DELIVERED, CANCELLED\nDELIVERED  → REFUNDED\nCANCELLED  → (terminal)\nREFUNDED   → (terminal)\n```\n\nLe graphe est à sens unique : une commande expédiée ne redevient pas « en préparation », sinon l'historique ne veut plus rien dire.\n\n### Réapprovisionnement automatique\n\nAtteindre `CANCELLED` ou `REFUNDED` **remet les articles en stock**, dans la même transaction que le changement de statut. La réponse porte alors `restocked` (nombre de lignes rendues). Le graphe garantit qu'un statut de restitution n'est atteint qu'une fois : pas de double réapprovisionnement possible.\n\n### Codes\n\n- `200` modifiée · `400` statut inconnu · `404` commande inconnue · `409` transition interdite **ou** statut déjà courant",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PREPARING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "409 transition interdite",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Transition impossible : NEW → DELIVERED.\"\n}"
+            },
+            {
+              "name": "409 déjà dans ce statut",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"La commande est déjà dans ce statut.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/orders/:number/payment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderNumber}}/payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders", "{{orderNumber}}", "payment"]
+            },
+            "description": "Confirme ou rejette un règlement.\n\n### Body (paymentStatusUpdateSchema)\n\n| Champ | Valeurs |\n|---|---|\n| `status` | `PENDING`, `CONFIRMED`, `FAILED` |\n| `reference` | optionnel, max 120 car. |\n\nEn V1 aucun opérateur n'est branché : l'admin encaisse hors ligne et note la référence à la main. Le champ existe déjà pour la V2.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\",\n  \"reference\": \"WAVE-88213\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"operator\": \"WAVE\", \"status\": \"CONFIRMED\", \"amount\": 53820, \"reference\": \"WAVE-88213\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products?lowStock=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products"],
+              "query": [
+                {
+                  "key": "lowStock",
+                  "value": "1",
+                  "description": "0 | 1"
+                }
+              ]
+            },
+            "description": "Catalogue vu par l'admin : **brouillons inclus**, contrairement à `GET /products` qui ne sort que les `ONLINE`.\n\nTri par stock croissant puis par nom — ce qui manque remonte en haut.\n\n### Query (adminProductQuerySchema)\n\n| Param | Valeurs | Défaut |\n|---|---|---|\n| `house` | slug de maison | — |\n| `status` | `ONLINE`, `DRAFT` | — |\n| `lowStock` | `0`, `1` — limite au seuil d'alerte (10) | `0` |"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"slug\": \"minuit-poudre\",\n        \"name\": \"Minuit Poudré\",\n        \"ref\": \"MV-MP-250\",\n        \"price\": 29900,\n        \"capacity\": \"250 ml\",\n        \"stock\": 0,\n        \"status\": \"ONLINE\",\n        \"img\": \"/assets/minuit-poudre.jpeg\",\n        \"house\": { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" }\n      }\n    ],\n    \"lowStockThreshold\": 10\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/products/:slug",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "{{productSlug}}"]
+            },
+            "description": "Ajuste un produit. Au moins un champ requis, sinon `400`.\n\n### Body (productUpdateSchema)\n\n| Champ | Contrainte |\n|---|---|\n| `stock` | entier 0..99 999 |\n| `price` | entier > 0, max 100 000 000 (F CFA, sans décimale) |\n| `status` | `ONLINE`, `DRAFT` |\n\n`status: \"DRAFT\"` retire immédiatement le produit de la boutique publique et de `GET /products`, sans le supprimer.\n\n⚠️ Ce `PATCH` **écrase** le stock, il ne l'incrémente pas : c'est une correction d'inventaire, pas un mouvement.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 24\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 stock négatif",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Modification invalide.\",\n  \"issues\": [\n    {\n      \"origin\": \"number\",\n      \"code\": \"too_small\",\n      \"minimum\": 0,\n      \"inclusive\": true,\n      \"path\": [\"stock\"],\n      \"message\": \"Le stock ne peut pas être négatif\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalogue — écriture (session requise)",
+      "item": [
+        {
+          "name": "GET /admin/houses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/houses",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "houses"]
+            },
+            "description": "Liste les maisons **avec le nombre de produits rattachés** — c'est ce compteur qui détermine si la suppression est permise.\n\nLa route publique `GET /houses` ne renvoie que `name` et `slug`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": [\n    { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\", \"createdAt\": \"2026-09-11T…\", \"_count\": { \"products\": 5 } },\n    { \"name\": \"Velynákaï\", \"slug\": \"velyna-kai\", \"createdAt\": \"2026-09-11T…\", \"_count\": { \"products\": 1 } }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /admin/houses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/houses",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "houses"]
+            },
+            "description": "Crée une maison. Remplace l'ancien `POST /houses`.\n\n### Body (houseInputSchema)\n\n| Champ | Contrainte |\n|---|---|\n| `name` | 2 à 80 caractères |\n| `slug` | **minuscules, chiffres, tirets simples** — `^[a-z0-9]+(?:-[a-z0-9]+)*$` |\n\n### Codes\n\n- `201` créée · `400` body invalide · `401` sans session · `409` nom ou slug déjà pris\n\nLe `409` **nomme le champ en conflit** : Prisma 7 avec l'adaptateur pg ne remplit pas `meta.target`, l'API relit donc la valeur fautive pour produire un message actionnable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maison Essai\",\n  \"slug\": \"maison-essai\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"name\": \"Maison Essai\", \"slug\": \"maison-essai\", \"_count\": { \"products\": 0 } }\n}"
+            },
+            {
+              "name": "409 slug pris",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Le slug « maison-essai » est déjà utilisé.\"\n}"
+            },
+            {
+              "name": "400 slug mal formé",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Maison invalide.\",\n  \"issues\": [\n    {\n      \"code\": \"invalid_format\",\n      \"format\": \"regex\",\n      \"path\": [\"slug\"],\n      \"message\": \"Minuscules, chiffres et tirets uniquement\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/houses/:slug",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/houses/maison-essai",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "houses", "maison-essai"]
+            },
+            "description": "Renomme une maison ou change son slug. Tout est optionnel, mais **au moins un champ** doit être fourni.\n\n⚠️ Changer le slug **casse les URLs publiques** de la maison (`/maisons/<slug>`) et les liens déjà partagés. À faire avant la mise en ligne, pas après.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maison Essai Renommée\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"name\": \"Maison Essai Renommée\", \"slug\": \"maison-essai\", \"_count\": { \"products\": 0 } }\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/houses/:slug",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/houses/maison-essai",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "houses", "maison-essai"]
+            },
+            "description": "Supprime une maison **vide**.\n\nUne maison qui porte des produits est refusée en `409` avec le compte exact : la contrainte de clé étrangère refuserait de toute façon, autant renvoyer un message qui dit quoi faire."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"slug\": \"maison-essai\", \"deleted\": true }\n}"
+            },
+            {
+              "name": "409 maison non vide",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Cette maison porte 5 produit(s). Déplacez-les ou supprimez-les d'abord.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/products/:slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "{{productSlug}}"]
+            },
+            "description": "Fiche produit complète pour le formulaire d'édition : tous les champs éditoriaux, visuels et le rang de nouveauté.\n\nContrairement à `GET /products/:slug` public, **renvoie aussi les brouillons**."
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Produit introuvable.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /admin/products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products"]
+            },
+            "description": "Crée un produit.\n\n### Body (productInputSchema)\n\n**Obligatoires** : `slug`, `name`, `ref`, `houseSlug`, `price`, `capacity`, `img`.\n**Avec défaut** : `stock` (0), `status` (`DRAFT`).\n**Optionnels** : `newRank`, `headNote`, `heartNote`, `backgroundNote`, `piece`, `ambiance`, `usage`, `description`, `imgDetail`, `detailBackground`, `inkColor`.\n\n### Contraintes notables\n\n| Champ | Règle |\n|---|---|\n| `slug`, `houseSlug` | `^[a-z0-9]+(?:-[a-z0-9]+)*$` |\n| `price` | entier > 0 (F CFA, jamais de décimale) |\n| `img`, `imgDetail` | **`^/assets/fichier.ext$`** — chemin local uniquement, pas d'URL externe |\n| `detailBackground`, `inkColor` | `#RRGGBB` |\n\n### Chaîne vide → null\n\nUn formulaire renvoie `\"\"` pour un champ optionnel non rempli. L'API convertit ces chaînes vides en `null` avant l'écriture : sans cela, la boutique afficherait des blocs vides au lieu de masquer la section.\n\n### Codes\n\n- `201` créé · `400` body invalide **ou maison inconnue** · `401` sans session · `409` slug ou référence déjà pris",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"brume-lin\",\n  \"name\": \"Brume de Lin\",\n  \"ref\": \"MV-BL-100\",\n  \"houseSlug\": \"maison-velyna\",\n  \"price\": 19900,\n  \"capacity\": \"100 ml\",\n  \"stock\": 20,\n  \"img\": \"/assets/fleur-de-lin.jpeg\",\n  \"status\": \"DRAFT\",\n  \"newRank\": 2,\n  \"headNote\": \"Néroli, poire\",\n  \"heartNote\": \"Lin, iris\",\n  \"backgroundNote\": \"Musc blanc\",\n  \"piece\": \"Chambre\",\n  \"ambiance\": \"Un drap séché au soleil\",\n  \"usage\": \"Vaporiser à 20 cm des textiles.\",\n  \"description\": \"Une fraîcheur de linge propre, tenue par un musc discret.\",\n  \"imgDetail\": \"\",\n  \"detailBackground\": \"\",\n  \"inkColor\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 maison inconnue",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Maison inconnue : maison-fantome.\"\n}"
+            },
+            {
+              "name": "400 image externe refusée",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Produit invalide.\",\n  \"issues\": [\n    {\n      \"code\": \"invalid_format\",\n      \"path\": [\"img\"],\n      \"message\": \"Chemin attendu : /assets/fichier.jpeg\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "409 référence prise",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"La référence « MV-BL-100 » est déjà utilisée.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/products/:slug",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "{{productSlug}}"]
+            },
+            "description": "Modifie un produit. **Tous les champs sont optionnels**, au moins un requis.\n\nC'est la même route qu'utilise l'écran Stock pour n'envoyer que `{ \"stock\": 24 }` — un `PATCH` partiel ne touche pas aux autres colonnes.\n\n### Points d'attention\n\n- `stock` **écrase** la valeur, il ne l'incrémente pas : c'est une correction d'inventaire, pas un mouvement.\n- `houseSlug` déplace le produit d'une maison à l'autre (résolu en `houseId` côté API).\n- Changer `slug` **casse l'URL publique** `/produit/<slug>`.\n- `status: \"DRAFT\"` retire le produit de la boutique sans le supprimer — c'est la sortie de secours pour un produit déjà commandé.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 21900,\n  \"status\": \"ONLINE\",\n  \"headNote\": \"Bergamote\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": {\n    \"slug\": \"brume-lin\",\n    \"name\": \"Brume de Lin\",\n    \"price\": 21900,\n    \"status\": \"ONLINE\",\n    \"headNote\": \"Bergamote\",\n    \"house\": { \"name\": \"Maison Velyná\", \"slug\": \"maison-velyna\" }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/products/:slug",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "products", "{{productSlug}}"]
+            },
+            "description": "Supprime un produit **jamais commandé**.\n\n### Refus volontaire\n\nUn produit présent dans une `OrderProduct` renvoie `409`. Le supprimer réécrirait l'historique comptable — or `OrderProduct` fige déjà `productName`, `productRef` et `unitPrice` précisément pour que les vieilles commandes ne bougent jamais. Le message oriente vers la bonne action : passer le produit en brouillon."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"data\": { \"slug\": \"brume-lin\", \"deleted\": true }\n}"
+            },
+            {
+              "name": "409 produit commandé",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Ce produit figure dans 1 commande(s) et ne peut pas être supprimé. Passez-le en brouillon pour le retirer de la boutique.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

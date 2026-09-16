@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { EB_Garamond, Jost, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteChrome } from "@/components/site-chrome";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -52,11 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body>
         <CartProvider>
-          <div className="shell">
-            <SiteHeader />
-            <main>{children}</main>
-            <SiteFooter />
-          </div>
+          <SiteChrome>{children}</SiteChrome>
         </CartProvider>
       </body>
     </html>
