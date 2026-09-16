@@ -19,9 +19,15 @@ const StockRow = ({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  // Le parent recharge la liste après chaque écriture : on resynchronise
-  // le champ, sinon il garderait la valeur tapée avant le rechargement.
-  useEffect(() => setStock(String(product.stock)), [product.stock]);
+  // Le parent recharge la liste après chaque écriture : on resynchronise le
+  // champ, sinon il garderait la valeur tapée avant le rechargement. Ajusté
+  // pendant le rendu plutôt que dans un effet, pour éviter la cascade.
+  const [syncedStock, setSyncedStock] = useState(product.stock);
+
+  if (product.stock !== syncedStock) {
+    setSyncedStock(product.stock);
+    setStock(String(product.stock));
+  }
 
   const dirty = stock !== String(product.stock);
 
@@ -68,7 +74,13 @@ const StockRow = ({
     <tr>
       <td>
         <span className="admin-product">
-          <Image src={imageSrc(product.img)} alt="" width={44} height={44} style={{ objectFit: "cover" }} />
+          <Image
+            src={imageSrc(product.img)}
+            alt=""
+            width={44}
+            height={44}
+            style={{ objectFit: "cover" }}
+          />
           <span>
             {product.name}
             <span className="admin-sub">
@@ -123,13 +135,11 @@ export default function AdminStockPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
     try {
       const result = await getAdminProducts({ lowStock: lowOnly });
       setProducts(result.products);
       setThreshold(result.lowStockThreshold);
+      setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Chargement impossible.");
     } finally {
@@ -137,7 +147,17 @@ export default function AdminStockPage() {
     }
   }, [lowOnly]);
 
+  /*
+   * Exception assumée à `set-state-in-effect`.
+   *
+   * Tous les `setState` de `load` sont désormais posés APRÈS un `await` :
+   * l'effet ne pose plus rien de synchrone. Mais la règle raisonne sur l'appel
+   * et ne distingue pas les deux cas. La satisfaire vraiment demanderait
+   * d'abandonner le chargement côté client, que le back-office impose : session
+   * par cookie httpOnly et filtres interactifs.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

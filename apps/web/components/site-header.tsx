@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCart } from "./cart-provider";
 
 const LINKS = [
@@ -19,11 +19,16 @@ export const SiteHeader = () => {
   const { count, ready } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [brandsOpen, setBrandsOpen] = useState(false);
+  const [shownPath, setShownPath] = useState(pathname);
 
-  useEffect(() => {
+  // Refermer les menus à la navigation, ajusté PENDANT le rendu et non dans un
+  // effet : React reprend le rendu avant de peindre, donc pas de cascade — et
+  // surtout pas de frame où le menu resterait ouvert sur la nouvelle page.
+  if (pathname !== shownPath) {
+    setShownPath(pathname);
     setMenuOpen(false);
     setBrandsOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <header className="header">

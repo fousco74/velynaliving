@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useMemo, useSyncExternalStore } from "react";
 import {
   DELIVERY_OPTIONS,
   formatXOF,
@@ -14,15 +14,34 @@ import {
 import type { Order } from "@/lib/api";
 import { imageSrc } from "@/lib/api";
 
+/**
+ * La commande est déposée en sessionStorage par le tunnel, puis relue ici.
+ *
+ * `useSyncExternalStore` plutôt qu'un effet : il rend `null` côté serveur et la
+ * valeur réelle dès le premier rendu client. Pas d'état posé dans un effet,
+ * donc pas de rendu en cascade, et le HTML serveur reste identique au premier
+ * rendu client. La valeur ne change jamais après coup : rien à écouter.
+ */
+const noSubscription = () => () => {};
+const readLastOrder = () => sessionStorage.getItem("velyna.lastOrder");
+const noOrderOnServer = () => null;
+
 function ConfirmationContent() {
   const params = useSearchParams();
   const number = params.get("number");
-  const [order, setOrder] = useState<Order | null>(null);
 
-  useEffect(() => {
-    const raw = sessionStorage.getItem("velyna.lastOrder");
-    if (raw) setOrder(JSON.parse(raw) as Order);
-  }, []);
+  const raw = useSyncExternalStore(noSubscription, readLastOrder, noOrderOnServer);
+
+  const order = useMemo<Order | null>(() => {
+    if (!raw) return null;
+
+    try {
+      return JSON.parse(raw) as Order;
+    } catch {
+      // Donnée corrompue : la page reste utile, elle affiche le numéro.
+      return null;
+    }
+  }, [raw]);
 
   return (
     <>

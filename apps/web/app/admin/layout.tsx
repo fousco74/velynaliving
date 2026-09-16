@@ -23,10 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLogin = pathname === "/admin/login";
 
   useEffect(() => {
-    if (isLogin) {
-      setChecked(true);
-      return;
-    }
+    // La page de connexion n'a rien à vérifier, et elle rend ses enfants avant
+    // même que `checked` ne soit consulté : aucun état à poser ici.
+    if (isLogin) return;
 
     // La vraie garde est côté API : chaque route /admin exige le cookie de
     // session. Ce contrôle ne sert qu'à éviter d'afficher une coquille vide

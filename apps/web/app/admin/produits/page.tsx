@@ -31,9 +31,6 @@ const ProductsView = () => {
   }, []);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
     try {
       const result = await getAdminProducts({
         house: house || undefined,
@@ -42,6 +39,7 @@ const ProductsView = () => {
 
       setProducts(result.products);
       setThreshold(result.lowStockThreshold);
+      setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Chargement impossible.");
     } finally {
@@ -49,7 +47,17 @@ const ProductsView = () => {
     }
   }, [house, status]);
 
+  /*
+   * Exception assumée à `set-state-in-effect`.
+   *
+   * Tous les `setState` de `load` sont désormais posés APRÈS un `await` :
+   * l'effet ne pose plus rien de synchrone. Mais la règle raisonne sur l'appel
+   * et ne distingue pas les deux cas. La satisfaire vraiment demanderait
+   * d'abandonner le chargement côté client, que le back-office impose : session
+   * par cookie httpOnly et filtres interactifs.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

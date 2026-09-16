@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "@velyna/shared";
+import { ORDER_STATUS_LABELS, type OrderStatus } from "@velyna/shared";
 import { trackOrder, type Order } from "@/lib/api";
 import { OrderDetail } from "@/components/order-detail";
 

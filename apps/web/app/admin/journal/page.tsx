@@ -15,9 +15,6 @@ export default function AdminJournalPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
     try {
       const result = await getAdminJournal({
         status: status || undefined,
@@ -26,6 +23,7 @@ export default function AdminJournalPage() {
 
       setArticles(result.articles);
       setCategories(result.categories);
+      setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Chargement impossible.");
     } finally {
@@ -33,7 +31,17 @@ export default function AdminJournalPage() {
     }
   }, [status, category]);
 
+  /*
+   * Exception assumée à `set-state-in-effect`.
+   *
+   * Tous les `setState` de `load` sont désormais posés APRÈS un `await` :
+   * l'effet ne pose plus rien de synchrone. Mais la règle raisonne sur l'appel
+   * et ne distingue pas les deux cas. La satisfaire vraiment demanderait
+   * d'abandonner le chargement côté client, que le back-office impose : session
+   * par cookie httpOnly et filtres interactifs.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

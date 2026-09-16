@@ -41,10 +41,23 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   // que le HTML rendu côté serveur et le premier rendu client concordent.
   const [ready, setReady] = useState(false);
 
+  /*
+   * Exception assumée à `set-state-in-effect`.
+   *
+   * Le panier n'existe que dans le navigateur : le lire pendant le rendu ferait
+   * diverger le HTML du serveur et le premier rendu client. Contrairement à la
+   * page de confirmation, il ne s'agit pas d'une lecture unique — React reste
+   * propriétaire de l'état, localStorage n'en est qu'un miroir — donc
+   * `useSyncExternalStore` inverserait la responsabilité pour rien.
+   *
+   * La règle vise les cascades de rendu ; ici l'effet ne se joue qu'au montage.
+   */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setLines(read());
     setReady(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!ready) return;
