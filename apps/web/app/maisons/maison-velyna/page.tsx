@@ -58,7 +58,7 @@ export default async function MaisonVelynaPage() {
         </div>
         <figure style={{ gridColumn: "8 / span 5", margin: 0 }}>
           <Image
-            src="/assets/les-5-parfums.jpeg"
+            src="/assets/parfums.jpeg"
             alt="Les cinq parfums Maison Velyná alignés"
             width={900}
             height={1200}

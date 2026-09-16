@@ -29,7 +29,6 @@ export const SiteHeader = () => {
     <header className="header">
       <div className="header-bar">
         <Link href="/" className="brand">
-          <Image src="/assets/logo.jpeg" alt="MH Velyná Group" width={34} height={34} priority />
           <span>
             VELYNÁ
             <em className="italic" style={{ opacity: 0.75 }}>
@@ -98,7 +97,12 @@ export const SiteHeader = () => {
               <p>Fragrances d&apos;intérieur</p>
             </Link>
             <Link href="/maisons/velyna-kai" className="submenu-card">
-              <Image src="/assets/velyna-kai.jpeg" alt="Velynákaï" width={640} height={480} />
+              <Image
+                src="/assets/maison-velyna-kai.jpeg"
+                alt="Velynákaï"
+                width={640}
+                height={480}
+              />
               <p>
                 <span className="kai-word thin">Velyná</span>
                 <span className="kai-word bold">kaï</span>

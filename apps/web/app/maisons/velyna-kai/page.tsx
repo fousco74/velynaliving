@@ -110,7 +110,7 @@ export default async function VelynaKaiPage() {
             Voir le produit
           </Link>
         </div>
-        <div style={{ position: "relative", background: "#7c8446", minHeight: 280 }}>
+        <div style={{ position: "relative", background: "#7c8446", minHeight: 780 }}>
           <Image
             src="/assets/velynakai-produit.jpeg"
             alt="Boîte de Matcha Latte Velynákaï, 50 g"
@@ -172,7 +172,7 @@ export default async function VelynaKaiPage() {
               alt="Matcha Latte Velynákaï"
               fill
               sizes="(max-width: 860px) 100vw, 50vw"
-              style={{ objectFit: "cover", background: "#efede3" }}
+              style={{ objectFit: "contain" }}
             />
           </div>
           <div

@@ -52,7 +52,7 @@ export default function MaisonsPage() {
 
         <BrandRow
           href="/maisons/velyna-kai"
-          img="/assets/velyna-kai.jpeg"
+          img="/assets/maison-velyna-kai.jpeg"
           alt="Velynákaï"
           eyebrow="Marque II — depuis 2025"
           eyebrowColor="var(--kai-soft)"

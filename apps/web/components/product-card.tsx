@@ -9,12 +9,13 @@ export const ProductCard = ({ product }: { product: ProductCardData }) => {
   return (
     <Link href={`/produit/${product.slug}`} className="product-card">
       <Image
-        src={product.img}
-        alt={product.name}
-        width={800}
-        height={1066}
-        sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      />
+  src={product.img}
+  alt={product.name}
+  width={800}
+  height={400}
+  sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  className="product-image"
+/>
       <div className="product-card-row">
         <span className="product-card-name">{product.name}</span>
         <span className="product-card-price">{formatXOF(product.price)}</span>
