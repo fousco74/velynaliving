@@ -38,18 +38,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="fr"
-      className={`${playfair.variable} ${jost.variable} ${garamond.variable}`}
-      style={
-        {
-          "--serif": `var(--font-playfair), Georgia, serif`,
-          "--sans": `var(--font-jost), "Helvetica Neue", Arial, sans-serif`,
-          "--body": `var(--font-garamond), Georgia, serif`,
-        } as React.CSSProperties
-      }
-    >
-      <body>
+    // Les familles sont assemblées dans le thème (app/globals.css) : ici on ne
+    // publie que les variables de next/font.
+    <html lang="fr" className={`${playfair.variable} ${jost.variable} ${garamond.variable}`}>
+      <body className="font-body bg-surface text-ink antialiased">
         <CartProvider>
           <SiteChrome>{children}</SiteChrome>
         </CartProvider>
