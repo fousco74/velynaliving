@@ -8,7 +8,11 @@ Site e-commerce d'une maison de parfum (Abidjan, Côte d'Ivoire). Devise XOF (F 
 - `apps/web` — Next.js 16 App Router (port 3002). **Tailwind v4** ; le thème est dans `@theme`
   en tête de `app/globals.css` (pas de `tailwind.config.js` en v4).
 - `packages/shared` — **fichier unique** `src/index.ts` (pas d'import interne : le bundler Next ne résout pas les `.js` de NodeNext). Contient les schémas Zod et `computeTotals`, la source de vérité des montants utilisée par l'API **et** le panier.
-- Postgres 16 via `docker-compose.yml` (hôte 5434, db/user `velyna`).
+- Postgres 16 via `docker-compose.yml` (développement, hôte 5434, db/user `velyna`).
+  La pile complète de production est dans `docker-compose.prod.yml`.
+- **L'API tourne avec `tsx`, jamais compilée** — y compris en production, où `tsx` est donc une
+  dépendance de production. `@velyna/shared` expose du TypeScript brut (`main: ./src/index.ts`),
+  et c'est précisément ce qui permet à Next de le transpiler : le compiler casserait le front.
 
 ## Commandes utiles
 
@@ -21,7 +25,23 @@ pnpm lint         # eslint partout — attrape ce que tsc ne voit pas (règles r
 pnpm format       # prettier
 ```
 
+```bash
+# Exploitation (depuis apps/api)
+pnpm --filter @velyna/api admin:create <email> <mot-de-passe>   # créer/réinitialiser un admin
+pnpm --filter @velyna/api journal:seed                          # reprendre le journal figé
+pnpm --filter @velyna/api uploads:sweep                         # images orphelines (simulation)
+pnpm --filter @velyna/api uploads:sweep -- --apply              # …et suppression
+```
+
 Déploiement : voir `docs/deploiement.md`.
+
+## Git
+
+- Remote : `origin` → `github.com/fousco74/velynaliving`, branche `main`.
+- Identité des commits : `KONE Fousseni <konefousseni66@gmail.com>`.
+- **Aucune ligne `Co-Authored-By` dans les messages de commit** — retirée de tout l'historique
+  le 16/09/2026 à la demande de l'utilisateur. Ne pas la réintroduire.
+- Messages en français, corps expliquant le _pourquoi_ quand le diff ne suffit pas.
 
 ## Règles de collaboration
 
@@ -29,7 +49,7 @@ Déploiement : voir `docs/deploiement.md`.
 - Expliquer les choix d'architecture après coup, en dev senior : le _pourquoi_, les compromis, les pièges.
 - Avancer par **phases**. Voir le détail des phases et la position courante en mémoire (`current-state`).
 
-## État (15/09/2026)
+## État (16/09/2026)
 
 Site public complet + **back-office admin terminé** : auth, commandes (statuts, paiement),
 maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
@@ -73,7 +93,9 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   persistant en production. Le format est vérifié par les **octets d'en-tête**, pas par le
   `Content-Type` : SVG refusé, un fichier déguisé en `.jpeg` aussi.
 - Toute image venant de la base s'affiche via `imageSrc()` (`apps/web/lib/api.ts`) : `/assets/…`
-  est servi par Next, `/uploads/…` par l'API.
+  est servi par Next depuis `public/`, `/uploads/…` par le relais `/api/uploads/…` du front, qui
+  va la chercher sur l'API. Ne jamais pointer un `<Image>` directement sur l'API : son optimiseur
+  télécharge côté serveur et dépendrait alors du DNS public depuis le conteneur.
 - Les couleurs se déclarent **uniquement** dans le bloc `@theme` de `app/globals.css`. Y toucher
   suffit à changer tout le site : les utilitaires Tailwind lisent ces tokens, et les anciennes
   variables (`--ink`, `--bg`…) en sont de simples alias.
@@ -81,6 +103,9 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   hors layer, il écraserait silencieusement les utilitaires Tailwind.
 - Un schéma PATCH ne se construit **jamais** par `.partial()` sur un schéma portant des `.default()` :
   Zod garde le default et un `PATCH {}` écrit une valeur que personne n'a demandée.
+- Dans `pnpm-workspace.yaml`, `allowBuilds` et `onlyBuiltDependencies` doivent rester cohérentes :
+  en pnpm 11 la première prime, et un paquet absent d'elle fait échouer tout `pnpm install` sur un
+  store vide — clone neuf, CI, image Docker. Invisible en local, où le store a déjà tout compilé.
 
 ## Design source
 
