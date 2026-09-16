@@ -2,10 +2,18 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Scripts de build autorisés ou refusés, explicitement.
+# `allowBuilds` est la clé retenue par pnpm 11 ; elle prime sur
+# `onlyBuiltDependencies`, conservée pour les versions antérieures. Les deux
+# doivent donc rester cohérentes — esbuild absent d'ici faisait échouer tout
+# `pnpm install` sur un store vide (clone neuf, image Docker, CI).
 allowBuilds:
   '@prisma/engines': false
   prisma: false
   unrs-resolver: false
+  esbuild: true
+  '@prisma/client': true
+  sharp: true
 
 onlyBuiltDependencies:
   - "@prisma/client"
