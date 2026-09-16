@@ -17,6 +17,7 @@ pnpm dev          # lance api + web en parallèle
 pnpm db:up        # démarre postgres (docker)
 pnpm db:down
 pnpm typecheck    # tsc --noEmit partout
+pnpm lint         # eslint partout — attrape ce que tsc ne voit pas (règles react-hooks)
 pnpm format       # prettier
 ```
 
@@ -47,7 +48,9 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement,
   conditionnel (`stock >= quantity`) pour éviter la survente.
 - Réponses API : `{ data }` en succès, `{ error }` (chaîne) en échec, `issues` en plus si Zod.
 - `prisma generate` **et** `prisma migrate` à chaque modif du schéma : la v7 ne chaîne plus les deux.
-- ⚠️ `POST /houses` n'est protégé par aucune auth — à sécuriser avant déploiement.
+- Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
+  publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
+  (compteur de vues) et `POST /auth/login|logout`.
 - Les images du back-office se téléversent (`POST /admin/uploads`, corps brut, pas de multipart).
   Elles sont écrites dans `UPLOAD_DIR` côté API et servies sur `/uploads/…` — **jamais** dans
   `apps/web/public/`, qui est du build et repart à zéro à chaque déploiement. Prévoir un volume
