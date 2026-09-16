@@ -4,13 +4,25 @@ import { prisma } from "../db.js";
 import { verifyPassword } from "../lib/password.js";
 import { clearSessionCookie, createToken, setSessionCookie } from "../lib/session.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { rateLimit } from "../lib/rate-limit.js";
 
 export const authRouter = express.Router();
+
+/**
+ * Le mot de passe est vérifié par scrypt, donc lent par construction — mais
+ * rien n'empêchait d'essayer en boucle. Dix tentatives par quart d'heure et
+ * par IP laissent largement la place aux fautes de frappe.
+ */
+const loginLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Trop de tentatives de connexion. Réessayez dans quelques minutes.",
+});
 
 /** Empreinte factice : coût de vérification identique que le compte existe ou non. */
 const DUMMY_HASH = "scrypt$00000000000000000000000000000000$" + "0".repeat(128);
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", loginLimit, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
 
   if (!parsed.success) {

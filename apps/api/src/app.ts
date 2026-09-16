@@ -28,6 +28,10 @@ const onError: ErrorRequestHandler = (err, _req, res, _next) => {
 export const createApp = () => {
   const app = express();
 
+  // Derrière un reverse proxy, `req.ip` doit être l'IP du client et non celle
+  // du proxy — sinon le limiteur de connexion compte tout le monde ensemble.
+  if (env.TRUST_PROXY > 0) app.set("trust proxy", env.TRUST_PROXY);
+
   // credentials: true — sans cela le cookie de session httpOnly ne franchit
   // pas la frontière web (3002) → api (4001). L'origine reste sur liste blanche.
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
