@@ -1,0 +1,100 @@
+# Pile de production / préproduction.
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Aucun service n'est exposé sur l'internet directement : l'API et le front
+# n'écoutent que sur 127.0.0.1, un reverse proxy sur l'hôte (nginx, Caddy)
+# termine TLS et route les deux domaines. Voir docs/deploiement.md.
+
+name: velyna
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Volontairement sans `ports` : la base n'est joignable que depuis le
+    # réseau interne de la pile. Pour l'inspecter, passer par `docker exec`.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Migrations jouées AVANT l'API, à chaque déploiement, puis le conteneur
+  # s'arrête. `migrate deploy` n'applique que des migrations déjà écrites et
+  # ne génère jamais de schéma : aucune surprise en production.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CORS_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN manquant}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET manquant}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["pnpm", "migrate:deploy"]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Doit être l'origine EXACTE du front (schéma + domaine, sans slash final).
+      CORS_ORIGIN: ${WEB_ORIGIN}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_HOURS: ${SESSION_HOURS:-12}
+      UPLOAD_DIR: /app/apps/api/uploads
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-5}
+      # Nombre de proxies devant l'API. 1 avec un nginx/Caddy sur l'hôte.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+    volumes:
+      # Les images téléversées sont des DONNÉES : sans ce volume, chaque
+      # redéploiement les efface.
+      - uploads:/app/apps/api/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:4001:4001"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Inscrit dans le bundle navigateur au BUILD. Changer cette valeur
+        # exige `up -d --build`, pas un simple redémarrage.
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?PUBLIC_API_URL manquant}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      # Lue à l'EXÉCUTION, pour les rendus serveur uniquement : le conteneur
+      # joint l'API par le réseau interne au lieu de ressortir par le proxy.
+      # Le navigateur, lui, n'en sait rien et utilise PUBLIC_API_URL.
+      API_INTERNAL_URL: http://api:4001
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "127.0.0.1:3002:3002"
+
+volumes:
+  pgdata:
+  uploads:

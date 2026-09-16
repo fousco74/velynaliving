@@ -1,0 +1,23 @@
+# Tout ce qui ne doit jamais entrer dans une image.
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+*.tsbuildinfo
+
+# Secrets : les variables sont injectées à l'exécution, jamais copiées.
+.env
+**/.env
+!**/.env.example
+
+# Données locales
+apps/api/uploads
+
+.git
+.github
+.claude
+.agents
+**/.agents
+*.log

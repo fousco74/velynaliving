@@ -1,4 +1,22 @@
+/** Adresse publique de l'API : la seule qui ait un sens pour un navigateur. */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4001";
+
+/**
+ * Base réellement utilisée pour un appel.
+ *
+ * Pendant un rendu serveur, le conteneur web joint l'API par le réseau interne
+ * (`http://api:4001`) : passer par l'adresse publique l'obligerait à ressortir
+ * sur l'internet, refaire une poignée de main TLS et revenir par le proxy — et
+ * échouerait dès que le DNS public n'est pas résolvable depuis le conteneur.
+ *
+ * Côté navigateur, `API_INTERNAL_URL` n'existe pas : seule l'adresse publique
+ * est inscrite dans le bundle.
+ */
+const BASE_URL =
+  typeof window === "undefined" ? (process.env.API_INTERNAL_URL ?? API_URL) : API_URL;
+
+/** Base à utiliser depuis le serveur — le relais d'images s'en sert. */
+export const API_BASE_URL = process.env.API_INTERNAL_URL ?? API_URL;
 
 export type House = { name: string; slug: string };
 
@@ -73,7 +91,7 @@ export class ApiError extends Error {
 }
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: { "content-type": "application/json", ...init?.headers },
     cache: "no-store",
@@ -415,12 +433,14 @@ export const deleteArticle = (slug: string) =>
 /**
  * Résout un chemin d'image stocké en base vers une URL affichable.
  *
- * `/assets/…` est servi par Next (apps/web/public), `/uploads/…` par l'API :
- * les images téléversées sont des données, elles ne vivent pas dans le build.
+ * `/assets/…` est servi par Next (apps/web/public). `/uploads/…` passe par le
+ * relais `/api/uploads/…` : l'URL reste RELATIVE, donc même origine. C'est ce
+ * qui évite à l'optimiseur d'images — qui travaille côté serveur — de dépendre
+ * du DNS public, de CORS et de `remotePatterns`.
+ *
  * Tout composant qui affiche une image venant de la base passe par ici.
  */
-export const imageSrc = (path: string) =>
-  path.startsWith("/uploads/") ? `${API_URL}${path}` : path;
+export const imageSrc = (path: string) => (path.startsWith("/uploads/") ? `/api${path}` : path);
 
 /**
  * Téléverse une image et renvoie le chemin à stocker en base.

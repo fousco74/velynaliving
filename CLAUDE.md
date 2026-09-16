@@ -21,6 +21,8 @@ pnpm lint         # eslint partout — attrape ce que tsc ne voit pas (règles r
 pnpm format       # prettier
 ```
 
+Déploiement : voir `docs/deploiement.md`.
+
 ## Règles de collaboration
 
 - L'assistant **écrit le code** (règle de mentorat levée le 15/09/2026, à la demande de l'utilisateur).
@@ -38,7 +40,11 @@ maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
   `## ` = intertitre, `> ` = citation (`parseArticleBody` dans `packages/shared`).
   Reprise du contenu : `pnpm --filter @velyna/api journal:seed` (idempotent).
 
-Reste à faire : conversion Tailwind des pages restantes, intégration paiement, déploiement.
+**Déploiement prêt** : `docker-compose.prod.yml` (Postgres + migrations + API + front),
+Dockerfiles, et `docs/deploiement.md` qui couvre les deux cibles — VPS avec Docker, ou
+Laravel Forge (qui ne sait pas déployer un compose : chemin natif, daemons supervisés).
+
+Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 
 ## Règles non négociables
 
@@ -48,6 +54,16 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement,
   conditionnel (`stock >= quantity`) pour éviter la survente.
 - Réponses API : `{ data }` en succès, `{ error }` (chaîne) en échec, `issues` en plus si Zod.
 - `prisma generate` **et** `prisma migrate` à chaque modif du schéma : la v7 ne chaîne plus les deux.
+- **L'API doit être sur un sous-domaine du même domaine que le front.** Le cookie de session
+  est en `SameSite=Lax` : il ne franchit pas deux domaines différents, et la connexion au
+  back-office échouerait sans erreur visible.
+- `NEXT_PUBLIC_API_URL` est inscrit dans le bundle **au build** : le changer impose de
+  reconstruire le front, pas de le redémarrer. En face, `API_INTERNAL_URL` est lu à l'exécution
+  et sert aux rendus serveur (réseau interne).
+- Les images téléversées passent par le relais `/api/uploads/…` du front : URL relative, donc
+  ni CORS, ni `remotePatterns`, ni dépendance au DNS public depuis le conteneur.
+- `UPLOAD_DIR` doit pointer vers un emplacement **persistant et hors du dépôt**. Sans volume,
+  chaque redéploiement efface les images.
 - Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
   publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
   (compteur de vues) et `POST /auth/login|logout`.

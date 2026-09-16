@@ -4,9 +4,12 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d postgres",
     "db:seed": "tsx prisma/seed.ts",
+    "migrate:deploy": "prisma migrate deploy",
+    "prisma:generate": "prisma generate",
     "admin:create": "tsx prisma/create-admin.ts",
     "journal:seed": "tsx prisma/seed-journal.ts",
     "uploads:sweep": "tsx prisma/sweep-uploads.ts"
@@ -20,6 +23,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
+    "tsx": "^4.23.13",
     "zod": "^4.5.4"
   },
   "devDependencies": {
@@ -28,7 +32,6 @@
     "@types/node": "^20.19.43",
     "@types/pg": "^8.23.1",
     "prisma": "7.10.0",
-    "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   }
 }
