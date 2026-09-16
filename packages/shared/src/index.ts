@@ -368,3 +368,117 @@ export type ProductInput = z.infer<typeof productInputSchema>;
 
 export type Login = z.infer<typeof loginSchema>;
 export type ProductUpdate = z.infer<typeof productUpdateSchema>;
+
+// ─────────────────────────── Journal ───────────────────────────
+
+export const JOURNAL_STATUSES = ["PUBLISHED", "DRAFT"] as const;
+export type JournalStatus = (typeof JOURNAL_STATUSES)[number];
+
+export const JOURNAL_STATUS_LABELS: Record<JournalStatus, string> = {
+  PUBLISHED: "Publié",
+  DRAFT: "Brouillon",
+};
+
+export type ArticleBlock = { kind: "p" | "h2" | "quote"; text: string };
+
+/**
+ * Le corps d'un article est stocké en **texte brut**, pas en JSON structuré :
+ * l'admin écrit dans un textarea, pas dans un éditeur de blocs. La convention
+ * est un sous-ensemble minimal de Markdown, choisi pour couvrir exactement les
+ * trois formes du design (paragraphe, intertitre, citation) et rien de plus.
+ *
+ *   ligne vide  → séparateur de blocs
+ *   `## texte`  → intertitre
+ *   `> texte`   → citation
+ *   sinon       → paragraphe
+ */
+export const parseArticleBody = (body: string | null | undefined): ArticleBlock[] => {
+  if (!body) return [];
+
+  // Les retours à la ligne internes à un bloc sont recollés : la mise en page
+  // du textarea ne doit pas transparaître dans le rendu.
+  const join = (text: string) => text.replace(/\s*\n\s*/g, " ").trim();
+
+  return body
+    .split(/\n[ \t]*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map<ArticleBlock>((block) => {
+      if (/^##\s/.test(block)) return { kind: "h2", text: join(block.replace(/^##\s*/, "")) };
+      if (/^>\s?/.test(block)) return { kind: "quote", text: join(block.replace(/^>\s?/gm, "")) };
+      return { kind: "p", text: join(block) };
+    });
+};
+
+/** 200 mots/minute, arrondi à la minute pleine, jamais moins d'une. */
+export const estimateReadingTime = (body: string | null | undefined) => {
+  const words = parseArticleBody(body).reduce(
+    (total, block) => total + block.text.split(/\s+/).filter(Boolean).length,
+    0,
+  );
+
+  return `${Math.max(1, Math.round(words / 200))} min`;
+};
+
+/**
+ * « 2 septembre 2026 ». Fuseau épinglé sur UTC : `publishedAt` a une précision
+ * au jour, et sans cela le serveur et le navigateur pourraient afficher deux
+ * dates différentes de part et d'autre de minuit — et déclencher une erreur
+ * d'hydratation React.
+ */
+const articleDateFmt = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+export const formatArticleDate = (value: string | Date | null | undefined) =>
+  value ? articleDateFmt.format(new Date(value)) : "";
+
+/** Date seule (AAAA-MM-JJ) : c'est ce qu'émet un `<input type="date">`. */
+const publishedAtSchema = z.iso.date().or(z.literal("")).nullable().optional();
+
+/** Champs éditoriaux, identiques à la création et à la modification. */
+const journalEditorialFields = {
+  category: optionalText(60),
+  excerpt: optionalText(600),
+  body: optionalText(20000),
+  imageUrl: imagePathSchema.or(z.literal("")).optional(),
+  readingTime: optionalText(20),
+  publishedAt: publishedAtSchema,
+};
+
+export const journalInputSchema = z.object({
+  slug: slugSchema,
+  title: z.string().trim().min(2, "Titre requis").max(160),
+  status: z.enum(JOURNAL_STATUSES).default("DRAFT"),
+  ...journalEditorialFields,
+});
+
+/**
+ * Le PATCH redéclare ses champs au lieu d'un `.partial()` sur le schéma de
+ * création : `.partial()` conserve les `.default()`, si bien qu'un corps vide
+ * `{}` produirait `{ status: "DRAFT" }` et dépublierait l'article sans que
+ * personne ne l'ait demandé. Un PATCH ne doit porter que ce qu'on lui envoie.
+ */
+export const journalUpdateSchema = z
+  .object({
+    slug: slugSchema.optional(),
+    title: z.string().trim().min(2, "Titre requis").max(160).optional(),
+    status: z.enum(JOURNAL_STATUSES).optional(),
+    ...journalEditorialFields,
+  })
+  .refine((patch) => Object.keys(patch).length > 0, "Aucune modification demandée.");
+
+export const adminJournalQuerySchema = z.object({
+  status: z.enum(JOURNAL_STATUSES).optional(),
+  category: z.string().trim().max(60).optional(),
+});
+
+export const journalQuerySchema = z.object({
+  category: z.string().trim().max(60).optional(),
+});
+
+export type JournalInput = z.infer<typeof journalInputSchema>;
+export type JournalUpdate = z.infer<typeof journalUpdateSchema>;

@@ -11,6 +11,7 @@ import {
 import { prisma } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { adminCatalogRouter } from "./admin-catalog.js";
+import { adminJournalRouter } from "./admin-journal.js";
 import { adminUploadsRouter } from "./admin-uploads.js";
 
 export const adminRouter = express.Router();
@@ -18,8 +19,9 @@ export const adminRouter = express.Router();
 // Toutes les routes de ce router sont protégées, sans exception.
 adminRouter.use(requireAdmin);
 
-// CRUD du catalogue (maisons, produits) — monté sous la même garde.
+// CRUD du catalogue (maisons, produits) et du journal — sous la même garde.
 adminRouter.use(adminCatalogRouter);
+adminRouter.use(adminJournalRouter);
 adminRouter.use(adminUploadsRouter);
 
 /** Ligne de liste : assez pour le tableau, sans charger les articles. */

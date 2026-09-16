@@ -1,9 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
-import { ARTICLES } from "@/lib/articles";
+import { formatArticleDate, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
+import { imageSrc, getJournal } from "@/lib/api";
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Les trois derniers articles publiés, tenus à jour depuis le back-office.
+  const { articles } = await getJournal();
+  const latest = articles.slice(0, 3);
+
   return (
     <>
       <section
@@ -183,7 +187,7 @@ export default function HomePage() {
 
       <BrandBlock
         eyebrow="Marque II"
-        img="/assets/velyna-kai.jpeg"
+        img="/assets/maison-velyna-kai.jpeg"
         href="/maisons/velyna-kai"
         title={
           <>
@@ -212,26 +216,28 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="product-grid">
-          {ARTICLES.slice(0, 3).map((article) => (
-            <Link key={article.slug} href={`/journal/${article.slug}`} className="product-card">
-              <Image
-                src={article.img}
-                alt={article.title}
-                width={800}
-                height={533}
-                style={{ aspectRatio: "3 / 2", objectFit: "cover", width: "100%", height: "auto" }}
-              />
-              <p className="eyebrow" style={{ marginTop: 18, letterSpacing: "0.22em" }}>
-                {article.category} — {article.date}
+          {latest.map((article) => (
+            <Link key={article.slug} href={`/journal/${article.slug}`} className="block">
+              {article.imageUrl && (
+                <Image
+                  src={imageSrc(article.imageUrl)}
+                  alt={article.title}
+                  width={800}
+                  height={533}
+                  className="aspect-3/2 w-full object-cover"
+                />
+              )}
+              <p className="mt-[18px] font-sans text-[10px] font-light tracking-[0.22em] text-muted-2 uppercase">
+                {[article.category, formatArticleDate(article.publishedAt)]
+                  .filter(Boolean)
+                  .join(" — ")}
               </p>
-              <h3 className="h3" style={{ marginTop: 12 }}>
+              <h3 className="mt-3 font-serif text-[clamp(22px,2.2vw,34px)] leading-[1.16] font-normal tracking-[-0.03em]">
                 {article.title}
               </h3>
-              <p
-                style={{ margin: "12px 0 0", fontSize: 17, lineHeight: 1.7, color: "var(--muted)" }}
-              >
-                {article.excerpt}
-              </p>
+              {article.excerpt && (
+                <p className="mt-3 text-[17px] leading-[1.7] text-muted">{article.excerpt}</p>
+              )}
             </Link>
           ))}
         </div>

@@ -321,6 +321,95 @@ export const deleteProduct = (slug: string) =>
     method: "DELETE",
   });
 
+// ─────────────────────── Journal ───────────────────────
+
+export type JournalCard = {
+  slug: string;
+  title: string;
+  category: string | null;
+  excerpt: string | null;
+  imageUrl: string | null;
+  readingTime: string | null;
+  publishedAt: string | null;
+  views: number;
+};
+
+export type JournalArticle = JournalCard & { body: string | null };
+
+export type JournalList = { articles: JournalCard[]; categories: string[] };
+
+export const getJournal = (category?: string) =>
+  request<JournalList>(`/journal${category ? `?category=${encodeURIComponent(category)}` : ""}`);
+
+export const getArticle = (slug: string) =>
+  request<JournalArticle>(`/journal/${encodeURIComponent(slug)}`);
+
+/**
+ * Compteur de lectures. Appelé depuis le navigateur, jamais pendant le rendu
+ * serveur : un prérendu Next n'est pas un lecteur.
+ */
+export const countArticleView = (slug: string) =>
+  request<{ counted: boolean }>(`/journal/${encodeURIComponent(slug)}/view`, { method: "POST" });
+
+export type AdminArticleRow = {
+  slug: string;
+  title: string;
+  category: string | null;
+  status: JournalStatusValue;
+  publishedAt: string | null;
+  readingTime: string | null;
+  views: number;
+  imageUrl: string | null;
+  updatedAt: string;
+};
+
+export type JournalStatusValue = "PUBLISHED" | "DRAFT";
+
+export type AdminArticleFull = AdminArticleRow & {
+  excerpt: string | null;
+  body: string | null;
+  createdAt: string;
+};
+
+export type ArticlePayload = {
+  slug?: string;
+  title?: string;
+  category?: string;
+  excerpt?: string;
+  body?: string;
+  imageUrl?: string;
+  readingTime?: string;
+  publishedAt?: string | null;
+  status?: JournalStatusValue;
+};
+
+export const getAdminJournal = (params?: { status?: string; category?: string }) => {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+
+  return request<{ articles: AdminArticleRow[]; categories: string[] }>(
+    `/admin/journal${query.size ? `?${query}` : ""}`,
+  );
+};
+
+export const getAdminArticle = (slug: string) =>
+  request<AdminArticleFull>(`/admin/journal/${encodeURIComponent(slug)}`);
+
+export const createArticle = (body: ArticlePayload) =>
+  request<AdminArticleFull>("/admin/journal", { method: "POST", body: JSON.stringify(body) });
+
+export const updateArticle = (slug: string, patch: ArticlePayload) =>
+  request<AdminArticleFull>(`/admin/journal/${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+
+export const deleteArticle = (slug: string) =>
+  request<{ slug: string; deleted: boolean }>(`/admin/journal/${encodeURIComponent(slug)}`, {
+    method: "DELETE",
+  });
+
 // ─────────────────────── Images ───────────────────────
 
 /**

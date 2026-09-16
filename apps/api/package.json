@@ -6,7 +6,9 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d postgres",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "admin:create": "tsx prisma/create-admin.ts",
+    "journal:seed": "tsx prisma/seed-journal.ts"
   },
   "type": "module",
   "dependencies": {

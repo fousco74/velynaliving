@@ -5,6 +5,7 @@ import { env } from "./config/env.js";
 import { houseRouter } from "./routes/house.js";
 import { productRouter } from "./routes/product.js";
 import { orderRouter } from "./routes/order.js";
+import { journalRouter } from "./routes/journal.js";
 import { UPLOAD_DIR } from "./lib/uploads.js";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
@@ -56,6 +57,7 @@ export const createApp = () => {
   app.use("/houses", houseRouter);
   app.use("/products", productRouter);
   app.use("/orders", orderRouter);
+  app.use("/journal", journalRouter);
 
   app.use(notFound);
   app.use(onError);
