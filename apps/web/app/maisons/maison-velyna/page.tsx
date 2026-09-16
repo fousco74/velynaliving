@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { formatXOF } from "@velyna/shared";
-import { getProductsDetailed } from "@/lib/api";
+import { imageSrc, getProductsDetailed } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Maison Velyná",
@@ -99,7 +99,7 @@ export default async function MaisonVelynaPage() {
               }}
             >
               <Image
-                src={product.img}
+                src={imageSrc(product.img)}
                 alt={product.name}
                 width={900}
                 height={1125}

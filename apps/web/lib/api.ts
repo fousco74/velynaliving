@@ -320,3 +320,26 @@ export const deleteProduct = (slug: string) =>
   request<{ slug: string; deleted: boolean }>(`/admin/products/${encodeURIComponent(slug)}`, {
     method: "DELETE",
   });
+
+// ─────────────────────── Images ───────────────────────
+
+/**
+ * Résout un chemin d'image stocké en base vers une URL affichable.
+ *
+ * `/assets/…` est servi par Next (apps/web/public), `/uploads/…` par l'API :
+ * les images téléversées sont des données, elles ne vivent pas dans le build.
+ * Tout composant qui affiche une image venant de la base passe par ici.
+ */
+export const imageSrc = (path: string) =>
+  path.startsWith("/uploads/") ? `${API_URL}${path}` : path;
+
+/**
+ * Téléverse une image et renvoie le chemin à stocker en base.
+ * Le fichier part tel quel dans le corps de la requête : pas de multipart,
+ * pas de dépendance côté API.
+ */
+export const uploadImage = (file: File) =>
+  request<{ url: string; bytes: number; type: string }>(
+    `/admin/uploads?name=${encodeURIComponent(file.name)}`,
+    { method: "POST", headers: { "content-type": file.type }, body: file },
+  );

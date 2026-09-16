@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { PRODUCT_STATUS_LABELS, formatXOF } from "@velyna/shared";
 import {
+  imageSrc,
   getAdminHouses,
   getAdminProducts,
   type AdminHouse,
@@ -121,7 +122,7 @@ const ProductsView = () => {
                   <td>
                     <span className="admin-product">
                       <Image
-                        src={product.img}
+                        src={imageSrc(product.img)}
                         alt=""
                         width={44}
                         height={44}

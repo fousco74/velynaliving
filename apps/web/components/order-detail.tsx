@@ -9,6 +9,7 @@ import {
   type OrderStatus,
 } from "@velyna/shared";
 import type { Order } from "@/lib/api";
+import { imageSrc } from "@/lib/api";
 
 export const OrderDetail = ({ order }: { order: Order }) => (
   <div className="grid12" style={{ alignItems: "start" }}>
@@ -29,7 +30,7 @@ export const OrderDetail = ({ order }: { order: Order }) => (
           }}
         >
           <Image
-            src={item.product.img}
+            src={imageSrc(item.product.img)}
             alt={item.productName}
             width={160}
             height={213}

@@ -11,6 +11,7 @@ import {
   PROMO_CODE,
 } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
+import { imageSrc } from "@/lib/api";
 
 export default function PanierPage() {
   const { lines, setQuantity, remove, ready, count } = useCart();
@@ -92,7 +93,7 @@ export default function PanierPage() {
                 >
                   <Link href={`/produit/${line.slug}`}>
                     <Image
-                      src={line.img}
+                      src={imageSrc(line.img)}
                       alt={line.name}
                       width={200}
                       height={266}

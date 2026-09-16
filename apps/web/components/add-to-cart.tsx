@@ -6,6 +6,7 @@ import { useState } from "react";
 import { formatXOF } from "@velyna/shared";
 import { useCart } from "./cart-provider";
 import type { Product } from "@/lib/api";
+import { imageSrc } from "@/lib/api";
 
 export const AddToCart = ({ product }: { product: Product }) => {
   const { add, lines } = useCart();
@@ -135,7 +136,7 @@ export const AddToCart = ({ product }: { product: Product }) => {
               }}
             >
               <Image
-                src={product.img}
+                src={imageSrc(product.img)}
                 alt={product.name}
                 width={92}
                 height={123}

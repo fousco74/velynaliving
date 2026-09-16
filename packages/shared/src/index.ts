@@ -275,13 +275,24 @@ export const slugSchema = z
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Minuscules, chiffres et tirets uniquement");
 
-/** Chemin d'image servi depuis apps/web/public. */
+/**
+ * Chemin d'image accepté en base.
+ *
+ * `/assets/…` : visuel livré avec le site (apps/web/public).
+ * `/uploads/…` : image téléversée depuis le back-office, servie par l'API.
+ *
+ * Volontairement restreint à ces deux préfixes : aucune URL externe ne peut
+ * entrer en base par un formulaire.
+ */
 export const imagePathSchema = z
   .string()
   .trim()
   .min(1)
   .max(300)
-  .regex(/^\/assets\/[A-Za-z0-9._-]+$/, "Chemin attendu : /assets/fichier.jpeg");
+  .regex(
+    /^\/(assets|uploads)\/[A-Za-z0-9._-]+$/,
+    "Chemin attendu : /assets/fichier.jpeg ou /uploads/fichier.jpeg",
+  );
 
 /** Couleur hexadécimale du design (#RRGGBB). */
 export const hexColorSchema = z

@@ -16,6 +16,7 @@ import {
   type OrderStatus,
 } from "@velyna/shared";
 import {
+  imageSrc,
   getAdminOrder,
   updateOrderStatus,
   updatePaymentStatus,
@@ -240,7 +241,7 @@ export default function AdminOrderPage() {
                   <td>
                     <span className="admin-product">
                       <Image
-                        src={item.product.img}
+                        src={imageSrc(item.product.img)}
                         alt=""
                         width={44}
                         height={44}

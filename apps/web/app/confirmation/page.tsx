@@ -12,6 +12,7 @@ import {
   type Operator,
 } from "@velyna/shared";
 import type { Order } from "@/lib/api";
+import { imageSrc } from "@/lib/api";
 
 function ConfirmationContent() {
   const params = useSearchParams();
@@ -86,7 +87,7 @@ function ConfirmationContent() {
                     }}
                   >
                     <Image
-                      src={item.product.img}
+                      src={imageSrc(item.product.img)}
                       alt={item.productName}
                       width={160}
                       height={213}

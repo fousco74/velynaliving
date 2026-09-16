@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PRODUCT_STATUSES, PRODUCT_STATUS_LABELS, formatXOF } from "@velyna/shared";
+import { ImageField } from "@/components/image-field";
 import {
   ApiError,
   createProduct,
@@ -316,29 +316,21 @@ export const ProductForm = ({ product }: { product?: AdminProductFull }) => {
       <section className="admin-panel">
         <h2 className="admin-subtitle">Visuels</h2>
         <div className="admin-grid">
-          <div className="field">
-            <label htmlFor="p-img">Image principale</label>
-            <input
-              id="p-img"
-              value={form.img}
-              onChange={(event) => set("img", event.target.value)}
-              placeholder="/assets/santal-atelier.jpeg"
-              required
-            />
-            <p className="admin-hint">
-              Fichier déposé dans <code className="admin-code">apps/web/public/assets/</code>
-            </p>
-          </div>
+          <ImageField
+            id="p-img"
+            label="Image principale"
+            value={form.img}
+            onChange={(value) => set("img", value)}
+            required
+          />
 
-          <div className="field">
-            <label htmlFor="p-imgd">Image de la fiche (optionnel)</label>
-            <input
-              id="p-imgd"
-              value={form.imgDetail}
-              onChange={(event) => set("imgDetail", event.target.value)}
-              placeholder="/assets/velynakai-produit.jpeg"
-            />
-          </div>
+          <ImageField
+            id="p-imgd"
+            label="Image de la fiche (optionnel)"
+            value={form.imgDetail}
+            onChange={(value) => set("imgDetail", value)}
+            hint="Remplace l'image principale en haut de la fiche produit."
+          />
 
           <div className="field">
             <label htmlFor="p-bg">Fond de la fiche (optionnel)</label>
@@ -360,13 +352,6 @@ export const ProductForm = ({ product }: { product?: AdminProductFull }) => {
             />
           </div>
         </div>
-
-        {form.img.startsWith("/assets/") && (
-          <div className="admin-preview">
-            <Image src={form.img} alt="" width={120} height={120} style={{ objectFit: "cover" }} />
-            <span className="admin-sub">Aperçu de l&apos;image principale</span>
-          </div>
-        )}
       </section>
 
       <section className="admin-panel">

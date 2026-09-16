@@ -5,6 +5,7 @@ import { env } from "./config/env.js";
 import { houseRouter } from "./routes/house.js";
 import { productRouter } from "./routes/product.js";
 import { orderRouter } from "./routes/order.js";
+import { UPLOAD_DIR } from "./lib/uploads.js";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
 
@@ -30,6 +31,21 @@ export const createApp = () => {
   // pas la frontière web (3002) → api (4001). L'origine reste sur liste blanche.
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "100kb" }));
+
+  /**
+   * Images téléversées. Le nom porte un suffixe aléatoire, donc une URL
+   * désigne toujours le même octet : on peut la mettre en cache sans limite.
+   * `express.static` refuse les remontées de chemin (`../`).
+   */
+  app.use(
+    "/uploads",
+    express.static(UPLOAD_DIR, {
+      maxAge: "1y",
+      immutable: true,
+      index: false,
+      dotfiles: "ignore",
+    }),
+  );
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", currency: CURRENCY });

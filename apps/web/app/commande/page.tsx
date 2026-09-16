@@ -16,7 +16,7 @@ import {
   type Operator,
 } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
-import { createOrder } from "@/lib/api";
+import { imageSrc, createOrder } from "@/lib/api";
 
 const STEPS = ["Coordonnées", "Livraison", "Règlement"];
 
@@ -382,7 +382,7 @@ function CommandeContent() {
                 }}
               >
                 <Image
-                  src={line.img}
+                  src={imageSrc(line.img)}
                   alt={line.name}
                   width={120}
                   height={160}

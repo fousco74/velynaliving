@@ -7,6 +7,9 @@ dist/
 out/
 *.tsbuildinfo
 
+# Images téléversées depuis le back-office (données, pas des sources)
+apps/api/uploads/
+
 # Environnement
 .env
 .env.*

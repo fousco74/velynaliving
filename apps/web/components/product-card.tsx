@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatXOF } from "@velyna/shared";
 import type { ProductCard as ProductCardData } from "@/lib/api";
+import { imageSrc } from "@/lib/api";
 
 export const ProductCard = ({ product }: { product: ProductCardData }) => {
   const soldOut = product.stock <= 0;
@@ -9,7 +10,7 @@ export const ProductCard = ({ product }: { product: ProductCardData }) => {
   return (
     <Link href={`/produit/${product.slug}`} className="product-card">
       <Image
-  src={product.img}
+  src={imageSrc(product.img)}
   alt={product.name}
   width={800}
   height={400}

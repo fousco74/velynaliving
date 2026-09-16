@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { PRODUCT_STATUS_LABELS, formatXOF } from "@velyna/shared";
-import { getAdminProducts, updateProduct, type AdminProduct } from "@/lib/api";
+import { imageSrc, getAdminProducts, updateProduct, type AdminProduct } from "@/lib/api";
 
 /** Ligne éditable : le stock se corrige sur place, sans page intermédiaire. */
 const StockRow = ({
@@ -68,7 +68,7 @@ const StockRow = ({
     <tr>
       <td>
         <span className="admin-product">
-          <Image src={product.img} alt="" width={44} height={44} style={{ objectFit: "cover" }} />
+          <Image src={imageSrc(product.img)} alt="" width={44} height={44} style={{ objectFit: "cover" }} />
           <span>
             {product.name}
             <span className="admin-sub">

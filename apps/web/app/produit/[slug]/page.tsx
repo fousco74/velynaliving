@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
-import { ApiError, getProduct } from "@/lib/api";
+import { imageSrc, ApiError, getProduct } from "@/lib/api";
 import { AddToCart } from "@/components/add-to-cart";
 
 const load = async (slug: string) => {
@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
       >
         <div style={{ gridColumn: "1 / span 6" }}>
           <Image
-            src={heroImg}
+            src={imageSrc(heroImg)}
             alt={product.name}
             width={1200}
             height={1500}
