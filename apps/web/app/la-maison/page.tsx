@@ -257,7 +257,7 @@ export default function LaMaisonPage() {
         </div>
       </section>
 
-      <section className="section" style={{ background: "var(--bg-dark)", color: "var(--cream)" }}>
+      <section className="section" style={{ background: "var(--sand)", color: "var(--ink)" }}>
         <div className="grid12" style={{ alignItems: "start" }}>
           <div style={{ gridRow: 1, gridColumn: "1 / span 5" }}>
             <Image
@@ -279,7 +279,7 @@ export default function LaMaisonPage() {
           <div style={{ gridRow: 1, gridColumn: "7 / span 6" }}>
             <p
               className="eyebrow"
-              style={{ marginBottom: 20, letterSpacing: "0.3em", color: "var(--rose)" }}
+              style={{ marginBottom: 20, letterSpacing: "0.3em", color: "var(--ink-3)" }}
             >
               CEO &amp; Founder
             </p>
@@ -292,7 +292,7 @@ export default function LaMaisonPage() {
                 maxWidth: "56ch",
                 fontSize: "clamp(18px, 1.45vw, 20px)",
                 lineHeight: 1.8,
-                color: "rgba(242,234,226,0.9)",
+                color: "var(--ink-2)",
               }}
             >
               L&apos;histoire de MH VELYNÁ GROUP est avant tout une histoire personnelle, née
@@ -305,7 +305,7 @@ export default function LaMaisonPage() {
                 maxWidth: "56ch",
                 fontSize: 18,
                 lineHeight: 1.8,
-                color: "rgba(242,234,226,0.78)",
+                color: "var(--ink-3)",
               }}
             >
               En devenant adulte, MANI AXELLE HERMINE a découvert une véritable appréciation pour
@@ -321,7 +321,7 @@ export default function LaMaisonPage() {
                 maxWidth: "56ch",
                 fontSize: 18,
                 lineHeight: 1.8,
-                color: "rgba(242,234,226,0.78)",
+                color: "var(--ink-3)",
               }}
             >
               Guidée par sa créativité, son exigence et son amour du beau, elle souhaite transmettre
@@ -332,7 +332,7 @@ export default function LaMaisonPage() {
               style={{
                 margin: "30px 0 0",
                 padding: "0 0 0 26px",
-                borderLeft: "1px solid rgba(201,180,154,0.55)",
+                borderLeft: "1px solid var(--line-ink)",
               }}
             >
               <p
@@ -343,7 +343,7 @@ export default function LaMaisonPage() {
                   fontStyle: "italic",
                   fontSize: "clamp(20px, 1.7vw, 26px)",
                   lineHeight: 1.5,
-                  color: "var(--cream)",
+                  color: "var(--ink)",
                 }}
               >
                 « La maison est le reflet de notre histoire. Créer des univers qui inspirent,

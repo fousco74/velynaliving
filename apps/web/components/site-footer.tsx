@@ -22,7 +22,7 @@ export const SiteFooter = () => (
             fontSize: 10,
             letterSpacing: "0.3em",
             textTransform: "uppercase",
-            color: "rgba(242,234,226,0.62)",
+            color: "var(--ink-3)",
           }}
         >
           Where comfort meets luxury
@@ -33,7 +33,7 @@ export const SiteFooter = () => (
             maxWidth: "34ch",
             fontSize: 17,
             lineHeight: 1.7,
-            color: "rgba(242,234,226,0.72)",
+            color: "var(--ink-2)",
           }}
         >
           Cocody, Abidjan — Côte d&apos;Ivoire
@@ -45,12 +45,8 @@ export const SiteFooter = () => (
         <Link href="/maisons">Toutes les marques</Link>
         <Link href="/maisons/maison-velyna">Maison Velyná</Link>
         <Link href="/maisons/velyna-kai">
-          <span className="kai-word thin" style={{ color: "var(--kai-light)" }}>
-            Velyná
-          </span>
-          <span className="kai-word bold" style={{ color: "var(--kai-light)" }}>
-            kaï
-          </span>
+          <span className="kai-word thin">Velyná</span>
+          <span className="kai-word bold">kaï</span>
         </Link>
         <Link href="/boutique">Boutique</Link>
       </div>

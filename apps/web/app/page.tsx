@@ -243,7 +243,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section" style={{ background: "var(--bg-dark)", color: "var(--cream)" }}>
+      <section className="section" style={{ background: "var(--sand)", color: "var(--ink)" }}>
         <div className="grid12" style={{ alignItems: "center" }}>
           <div style={{ gridColumn: "1 / span 4" }}>
             <Image
@@ -261,7 +261,7 @@ export default async function HomePage() {
             />
           </div>
           <div style={{ gridColumn: "6 / span 7" }}>
-            <p className="eyebrow" style={{ color: "var(--rose)", marginBottom: 22 }}>
+            <p className="eyebrow" style={{ color: "var(--ink-3)", marginBottom: 22 }}>
               CEO &amp; Founder — MH Velyná Group
             </p>
             <h2 className="h2">
@@ -272,18 +272,18 @@ export default async function HomePage() {
                 margin: "30px 0 0",
                 maxWidth: "50ch",
                 paddingLeft: 24,
-                borderLeft: "1px solid rgba(201,180,154,0.55)",
+                borderLeft: "1px solid var(--line-ink)",
                 fontFamily: "var(--serif)",
                 fontStyle: "italic",
                 fontSize: "clamp(19px, 1.6vw, 25px)",
                 lineHeight: 1.55,
-                color: "#e4d3c6",
+                color: "var(--ink-2)",
               }}
             >
               « La maison est le reflet de notre histoire. Créer des univers qui inspirent, apaisent
               et embellissent le quotidien est au cœur de ma vision. »
             </p>
-            <Link href="/la-maison" className="btn btn-light" style={{ marginTop: 34 }}>
+            <Link href="/la-maison" className="btn" style={{ marginTop: 34 }}>
               Lire son histoire
             </Link>
           </div>

@@ -28,6 +28,9 @@
   --color-surface-soft: #f7f3ee;
   --color-surface-dark: #2a1d18;
   --color-cream: #f2eae2;
+  /* Fond moyen (footer, bloc fondatrice) : assez clair pour porter du texte
+     encre, assez saturé pour trancher avec les crèmes des sections voisines. */
+  --color-sand: #c6ab96;
 
   /* Textes */
   --color-ink: #2b2320;
@@ -45,6 +48,9 @@
   --color-line: rgba(201, 180, 154, 0.6);
   --color-line-soft: rgba(201, 180, 154, 0.4);
   --color-line-strong: rgba(201, 180, 154, 0.9);
+  /* Les filets ci-dessus sont clairs : invisibles sur --color-sand.
+     Celui-ci est leur pendant sombre, pour les fonds moyens. */
+  --color-line-ink: rgba(43, 35, 32, 0.22);
 
   /* Velyná Kaï */
   --color-kai: #47521f;
@@ -80,6 +86,7 @@
   --bg-soft: var(--color-surface-soft);
   --bg-dark: var(--color-surface-dark);
   --cream: var(--color-cream);
+  --sand: var(--color-sand);
   --ink: var(--color-ink);
   --ink-2: var(--color-ink-2);
   --ink-3: var(--color-ink-3);
@@ -91,6 +98,7 @@
   --line: var(--color-line);
   --line-soft: var(--color-line-soft);
   --line-strong: var(--color-line-strong);
+  --line-ink: var(--color-line-ink);
   --kai: var(--color-kai);
   --kai-soft: var(--color-kai-soft);
   --kai-light: var(--color-kai-light);
@@ -500,8 +508,8 @@
   /* ---------------------------------------------------------------- footer */
 
   .footer {
-    background: var(--ink);
-    color: var(--cream);
+    background: var(--sand);
+    color: var(--ink);
     padding: clamp(56px, 8vw, 112px) var(--gutter) 36px;
   }
 
@@ -524,16 +532,22 @@
     font-size: 10px;
     letter-spacing: 0.26em;
     text-transform: uppercase;
-    color: rgba(242, 234, 226, 0.5);
+    color: var(--ink-3);
   }
 
+  /* Sur fond sombre, le survol passait au rose : un éclaircissement lisible.
+     Sur --color-sand, aucune couleur n'éclaircit sans perdre le contraste —
+     le survol devient donc un filet, l'idiome déjà employé par .nav. */
   .footer-col a {
+    align-self: flex-start;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
     font-size: 17px;
-    transition: color 300ms var(--ease);
+    transition: border-color 300ms var(--ease);
   }
 
   .footer-col a:hover {
-    color: var(--rose);
+    border-bottom-color: var(--ink);
   }
 
   .footer-bottom {
@@ -543,13 +557,13 @@
     justify-content: space-between;
     margin-top: clamp(40px, 6vw, 88px);
     padding-top: 22px;
-    border-top: 1px solid rgba(201, 180, 154, 0.28);
+    border-top: 1px solid var(--line-ink);
     font-family: var(--sans);
     font-weight: 200;
     font-size: 10px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(242, 234, 226, 0.52);
+    color: var(--ink-3);
   }
 
   /* ----------------------------------------------------------------- cards */
