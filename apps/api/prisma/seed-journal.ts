@@ -17,7 +17,7 @@ const articles = [
     category: "Fragrances",
     excerpt:
       "Chez MAISON VELYNÁ, chaque fragrance a été pensée comme une signature olfactive destinée à accompagner les différents espaces de vie.",
-    imageUrl: "/assets/parfums.jpeg",
+    imageUrl: "/assets/les-parfums.jpeg",
     readingTime: "6 min",
     views: 3204,
     publishedAt: "2026-09-02",
