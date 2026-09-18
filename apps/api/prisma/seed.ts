@@ -1,4 +1,5 @@
 import { prisma } from "../src/db.js";
+import { articles, seedJournal } from "./seed-journal.js";
 
 // Données relevées dans le design (docs/seed-data.md).
 // Les chemins d'images sont normalisés ici : le front sert apps/web/public/assets/.
@@ -26,9 +27,11 @@ const products = [
     heartNote: "Bois de santal, iris, violette",
     backgroundNote: "Cèdre, ambre, papyrus",
     piece: "Toute la maison",
-    usage: "Une composition intemporelle qui trouve naturellement sa place dans toute la maison. Ses notes boisées et sophistiquées apportent une sensation de calme, d'élégance et de caractère.",
+    usage:
+      "Une composition intemporelle qui trouve naturellement sa place dans toute la maison. Ses notes boisées et sophistiquées apportent une sensation de calme, d'élégance et de caractère.",
     ambiance: "L'atelier d'un artiste au petit matin",
-    description: "Un santal crémeux adouci d'un cuir presque tendre, relevé d'un poivre rose qui claque à l'ouverture. La fragrance s'installe lentement, comme une matière que l'on travaille à la main, et laisse derrière elle une chaleur boisée qui tient toute la journée.",
+    description:
+      "Un santal crémeux adouci d'un cuir presque tendre, relevé d'un poivre rose qui claque à l'ouverture. La fragrance s'installe lentement, comme une matière que l'on travaille à la main, et laisse derrière elle une chaleur boisée qui tient toute la journée.",
     status: "ONLINE" as const,
   },
   {
@@ -48,9 +51,11 @@ const products = [
     heartNote: "Basilic, rose, cassis, thym",
     backgroundNote: "Patchouli, réglisse, ambre gris",
     piece: "La cuisine",
-    usage: "Une fragrance fraîche et légère, idéale pour la cuisine. Sa diffusion plus aérienne accompagne parfaitement les moments après préparation des repas en apportant une sensation de fraîcheur.",
+    usage:
+      "Une fragrance fraîche et légère, idéale pour la cuisine. Sa diffusion plus aérienne accompagne parfaitement les moments après préparation des repas en apportant une sensation de fraîcheur.",
     ambiance: "Une terrasse méditerranéenne en fin de journée",
-    description: "L'écorce fraîche des agrumes rencontre la chair laiteuse de la figue. Le jasmin apporte une rondeur solaire, le bois flotté une salinité discrète. Une brise entre dans la pièce et n'en repart plus.",
+    description:
+      "L'écorce fraîche des agrumes rencontre la chair laiteuse de la figue. Le jasmin apporte une rondeur solaire, le bois flotté une salinité discrète. Une brise entre dans la pièce et n'en repart plus.",
     status: "ONLINE" as const,
   },
   {
@@ -70,9 +75,11 @@ const products = [
     heartNote: "Citron, fleur d'oranger",
     backgroundNote: "Cèdre, vétiver",
     piece: "Le linge et les textiles",
-    usage: "La signature de la fraîcheur délicate. Pensée pour le linge et les textiles de la maison, elle sublime la literie, les oreillers, les rideaux, les serviettes, les canapés, les tapis ou encore les petits détails du quotidien.",
+    usage:
+      "La signature de la fraîcheur délicate. Pensée pour le linge et les textiles de la maison, elle sublime la literie, les oreillers, les rideaux, les serviettes, les canapés, les tapis ou encore les petits détails du quotidien.",
     ambiance: "Du linge frais séchant à la fenêtre",
-    description: "La propreté comme un luxe. Des aldéhydes pétillants, un cœur de coton et de muguet, puis un musc blanc transparent qui prolonge la sensation de linge séché au vent. Le parfum des chambres claires et des dimanches lents.",
+    description:
+      "La propreté comme un luxe. Des aldéhydes pétillants, un cœur de coton et de muguet, puis un musc blanc transparent qui prolonge la sensation de linge séché au vent. Le parfum des chambres claires et des dimanches lents.",
     status: "ONLINE" as const,
   },
   {
@@ -92,9 +99,11 @@ const products = [
     heartNote: "Rose, osmanthe, jasmin, muguet",
     backgroundNote: "Patchouli, musc, cèdre, ambre gris",
     piece: "Le salon et les espaces de vie",
-    usage: "Une fragrance enveloppante et chaleureuse, pensée comme une véritable empreinte pour toute la maison. Sa tenue remarquable lui permet de diffuser longtemps son aura élégante, créant une atmosphère raffinée et réconfortante du salon aux espaces de vie.",
+    usage:
+      "Une fragrance enveloppante et chaleureuse, pensée comme une véritable empreinte pour toute la maison. Sa tenue remarquable lui permet de diffuser longtemps son aura élégante, créant une atmosphère raffinée et réconfortante du salon aux espaces de vie.",
     ambiance: "Un salon feutré, une soirée d'hiver",
-    description: "Des résines chaudes enveloppées de vanille sombre et de fève tonka. La cardamome empêche la douceur de devenir sucrée. Le sillage le plus profond de la maison, celui que l'on garde pour les soirées où l'on reçoit.",
+    description:
+      "Des résines chaudes enveloppées de vanille sombre et de fève tonka. La cardamome empêche la douceur de devenir sucrée. Le sillage le plus profond de la maison, celui que l'on garde pour les soirées où l'on reçoit.",
     status: "ONLINE" as const,
   },
   {
@@ -114,9 +123,11 @@ const products = [
     heartNote: "Poivre, violette, cannelle",
     backgroundNote: "Patchouli, cèdre, musc blanc",
     piece: "Les chambres",
-    usage: "Un parfum délicat autour du musc, imaginé pour les espaces où l'on recherche douceur et apaisement. Il accompagne merveilleusement les chambres parentales, les chambres d'invités ou les espaces des enfants.",
+    usage:
+      "Un parfum délicat autour du musc, imaginé pour les espaces où l'on recherche douceur et apaisement. Il accompagne merveilleusement les chambres parentales, les chambres d'invités ou les espaces des enfants.",
     ambiance: "Le silence élégant d'une chambre à minuit",
-    description: "L'iris poudré, sensuel et retenu, posé sur un santal crémeux. Une féminité adulte qui ne se raconte pas : elle se remarque quand on quitte la pièce.",
+    description:
+      "L'iris poudré, sensuel et retenu, posé sur un santal crémeux. Une féminité adulte qui ne se raconte pas : elle se remarque quand on quitte la pièce.",
     status: "ONLINE" as const,
   },
   {
@@ -138,7 +149,8 @@ const products = [
     piece: "Le rituel du matin",
     usage: null,
     ambiance: "Un instant suspendu, mesuré au geste près",
-    description: "Feuilles de première récolte ombrées trois semaines avant la cueillette, puis broyées lentement à la meule de pierre. Une poudre vert jade, dense, sans amertume sèche, qui monte en mousse fine et tient longtemps en bouche.",
+    description:
+      "Feuilles de première récolte ombrées trois semaines avant la cueillette, puis broyées lentement à la meule de pierre. Une poudre vert jade, dense, sans amertume sèche, qui monte en mousse fine et tient longtemps en bouche.",
     status: "ONLINE" as const,
   },
 ];
@@ -154,6 +166,12 @@ for (const { houseSlug, ...product } of products) {
   await prisma.product.upsert({ where: { slug: product.slug }, create: data, update: data });
 }
 
-console.log(`Seed terminé : ${houses.length} maisons, ${products.length} produits.`);
+// Le journal vient du même seed : au déploiement, `db:seed` suffit.
+const journalCreated = await seedJournal();
+
+console.log(
+  `Seed terminé : ${houses.length} maisons, ${products.length} produits, ` +
+    `${journalCreated} article(s) de journal créé(s) sur ${articles.length}.`,
+);
 
 await prisma.$disconnect();

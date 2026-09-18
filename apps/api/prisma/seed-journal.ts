@@ -1,16 +1,18 @@
+import { pathToFileURL } from "node:url";
 import { disconnect, prisma } from "../src/db.js";
 
 /**
  * Reprise du journal éditorial dans la base.
  *
- *   pnpm --filter @velyna/api journal:seed
+ *   pnpm --filter @velyna/api journal:seed     # le journal seul
+ *   pnpm --filter @velyna/api db:seed          # tout, journal compris
  *
  * Le contenu vivait en dur dans `apps/web/lib/articles.ts` tant que le journal
  * n'était pas administrable. Ce script est la bascule, et il est idempotent :
  * il n'écrase pas un article déjà en base — un texte corrigé depuis le
  * back-office ne doit pas revenir à sa version figée si on le rejoue.
  */
-const articles = [
+export const articles = [
   {
     slug: "fragrance-par-espace",
     title: "Une fragrance pour chaque espace de vie",
@@ -58,7 +60,14 @@ const articles = [
   },
 ];
 
-const main = async () => {
+/**
+ * Insère les articles manquants et renvoie le nombre de créations.
+ *
+ * Exportée pour que `seed.ts` couvre le journal sans recopier les données :
+ * une seule source de vérité ici, une seule commande au déploiement.
+ * La connexion n'est pas fermée — c'est à l'appelant de le faire.
+ */
+export const seedJournal = async () => {
   let created = 0;
 
   for (const article of articles) {
@@ -75,14 +84,25 @@ const main = async () => {
     created += result.count;
   }
 
+  return created;
+};
+
+const main = async () => {
+  const created = await seedJournal();
+
   console.log(
     `Journal : ${created} article(s) créé(s), ${articles.length - created} déjà en base.`,
   );
 };
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  })
-  .finally(disconnect);
+// Uniquement quand le fichier est lancé directement (`journal:seed`). Sans
+// cette garde, l'import depuis seed.ts rejouerait le script et fermerait la
+// connexion au milieu du seed principal.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main()
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    })
+    .finally(disconnect);
+}

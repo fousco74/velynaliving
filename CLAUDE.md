@@ -28,7 +28,7 @@ pnpm format       # prettier
 ```bash
 # Exploitation (depuis apps/api)
 pnpm --filter @velyna/api admin:create <email> <mot-de-passe>   # créer/réinitialiser un admin
-pnpm --filter @velyna/api journal:seed                          # reprendre le journal figé
+pnpm --filter @velyna/api journal:seed                          # le journal seul (inclus dans db:seed)
 pnpm --filter @velyna/api uploads:sweep                         # images orphelines (simulation)
 pnpm --filter @velyna/api uploads:sweep -- --apply              # …et suppression
 ```
@@ -58,7 +58,8 @@ maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
 - **Aucune intégration de paiement** : l'étape 3 enregistre l'opérateur choisi, `Payment.status = PENDING`.
 - Journal **en base** et administrable. Corps d'article en texte : ligne vide = nouveau bloc,
   `## ` = intertitre, `> ` = citation (`parseArticleBody` dans `packages/shared`).
-  Reprise du contenu : `pnpm --filter @velyna/api journal:seed` (idempotent).
+  Reprise du contenu : incluse dans `pnpm --filter @velyna/api db:seed`, ou
+  `journal:seed` pour le journal seul (idempotent dans les deux cas).
 
 **Déploiement prêt** : `docker-compose.prod.yml` (Postgres + migrations + API + front),
 Dockerfiles, et `docs/deploiement.md` qui couvre les deux cibles — VPS avec Docker, ou

@@ -233,17 +233,19 @@ uniquement dans l'image Docker, via `STANDALONE=1`) : `next start` fonctionne.
 ```bash
 # Docker
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api pnpm db:seed
-docker compose -f docker-compose.prod.yml --env-file .env.prod exec api pnpm journal:seed
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api pnpm admin:create <email> <mot-de-passe>
 
 # Forge
 cd /home/forge/velynaliving.ci
 pnpm --filter @velyna/api db:seed
-pnpm --filter @velyna/api journal:seed
 pnpm --filter @velyna/api admin:create <email> <mot-de-passe>
 ```
 
-Les deux seeds sont idempotents : les rejouer n'écrase rien.
+`db:seed` couvre maisons, produits **et** journal. `journal:seed` existe
+toujours pour rejouer le journal seul, mais n'est plus nécessaire ici.
+
+Le seed est idempotent : le rejouer n'écrase rien — ni un prix corrigé depuis
+le back-office, ni un article réécrit.
 
 **Le mot de passe administrateur doit être changé** : celui utilisé pendant le
 développement (`velyna-test-2026`) ne doit jamais atteindre la production.
