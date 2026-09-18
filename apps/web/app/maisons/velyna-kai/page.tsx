@@ -7,7 +7,7 @@ import { getProducts } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Velynákaï",
-  description: "Matcha de cérémonie premium grade, 50 g — et le rituel qui l'accompagne.",
+  description: "Matcha latte en poudre, 50 g — et le rituel qui l'accompagne.",
 };
 
 const RITUAL = [
@@ -96,7 +96,7 @@ export default async function VelynaKaiPage() {
               color: "rgba(244,245,232,0.82)",
             }}
           >
-            Matcha latte de cérémonie, 100 % premium grade, en boîte de 50 g.
+            Matcha latte en poudre, en boîte de 50 g.
           </p>
           <Link
             href={`/produit/${matcha.slug}`}
@@ -149,9 +149,11 @@ export default async function VelynaKaiPage() {
             color: "#3a3e33",
           }}
         >
-          Une collection de matchas premium et de rituels de dégustation conçus pour offrir un
-          moment d&apos;équilibre, d&apos;énergie et de sérénité. Chaque création célèbre le plaisir
-          d&apos;un instant suspendu, où qualité, esthétique et bien-être ne font qu&apos;un.
+          Le matcha est un thé vert japonais réduit en une poudre très fine. Là où le thé vert
+          classique s&apos;infuse puis se retire, le matcha se fouette directement dans l&apos;eau
+          et se boit entièrement, feuille comprise — d&apos;où sa densité en bouche et son énergie
+          longue. Velynákaï en fait un rituel : un moment d&apos;équilibre et de sérénité, où
+          qualité, esthétique et bien-être ne font qu&apos;un.
         </p>
       </section>
 
@@ -233,66 +235,6 @@ export default async function VelynaKaiPage() {
               </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section
-        className="section"
-        style={{
-          background: "#f4f3ec",
-          borderTop: "1px solid rgba(163,175,150,0.45)",
-          borderBottom: "1px solid rgba(163,175,150,0.45)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "12px 32px",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            marginBottom: "clamp(32px, 4vw, 60px)",
-          }}
-        >
-          <p className="eyebrow" style={{ color: "#8f9a82" }}>
-            Le rituel
-          </p>
-          <p
-            style={{
-              margin: 0,
-              fontFamily: "var(--serif)",
-              fontStyle: "italic",
-              fontSize: "clamp(17px, 1.4vw, 21px)",
-              color: "var(--muted)",
-            }}
-          >
-            Quatre gestes, quatre minutes
-          </p>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "clamp(24px, 3vw, 52px)",
-            alignItems: "start",
-          }}
-        >
-          {RITUAL.map((step) => (
-            <div
-              key={step.num}
-              style={{ borderTop: "1px solid rgba(163,175,150,0.6)", paddingTop: 22 }}
-            >
-              <p
-                className="eyebrow"
-                style={{ marginBottom: 16, letterSpacing: "0.26em", color: "#8e9b84" }}
-              >
-                {step.num} — {step.title}
-              </p>
-              <p style={{ margin: 0, fontSize: 17, lineHeight: 1.72, color: "#3a3e33" }}>
-                {step.text}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 

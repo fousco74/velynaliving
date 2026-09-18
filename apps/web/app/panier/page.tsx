@@ -69,8 +69,7 @@ export default function PanierPage() {
               Votre panier est encore vide.
             </p>
             <p className="lead" style={{ margin: "16px 0 30px", maxWidth: "48ch" }}>
-              Cinq fragrances d&apos;intérieur et un matcha de cérémonie vous attendent dans la
-              boutique.
+              Cinq fragrances d&apos;intérieur et un matcha vous attendent dans la boutique.
             </p>
             <Link href="/boutique" className="btn">
               Découvrir la boutique

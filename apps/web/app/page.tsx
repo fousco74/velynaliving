@@ -123,9 +123,6 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="grid12">
-          <p className="eyebrow" style={{ gridColumn: "1 / span 3" }}>
-            Le manifeste
-          </p>
           <div style={{ gridColumn: "4 / span 9" }}>
             <h2 className="h2" style={{ maxWidth: "26ch" }}>
               Le véritable luxe réside dans les{" "}
@@ -142,11 +139,6 @@ export default async function HomePage() {
               }}
             >
               <p className="lead" style={{ margin: 0 }}>
-                Une tasse de matcha préparée avec soin. Un parfum qui habille une pièce. Une
-                atmosphère qui apaise l&apos;esprit. Parce que notre intérieur devrait être bien
-                plus qu&apos;un simple lieu de vie.
-              </p>
-              <p className="lead" style={{ margin: 0 }}>
                 VELYNÁLIVING est l&apos;univers lifestyle imaginé par MH VELYNÁ GROUP, une maison
                 créative qui développe des marques inspirées par le bien-être, le design et
                 l&apos;art de vivre. Une destination où chaque détail a du sens, rassemblant des
@@ -154,18 +146,6 @@ export default async function HomePage() {
                 authentiques et intemporelles.
               </p>
             </div>
-            <p
-              style={{
-                margin: "clamp(28px, 3.5vw, 46px) 0 0",
-                fontFamily: "var(--serif)",
-                fontStyle: "italic",
-                fontSize: "clamp(19px, 1.6vw, 24px)",
-                lineHeight: 1.5,
-                color: "var(--muted)",
-              }}
-            >
-              Reste à savoir comment un intérieur y parvient.
-            </p>
           </div>
         </div>
       </section>
@@ -195,7 +175,7 @@ export default async function HomePage() {
             <span className="kai-word bold">kaï</span>
           </>
         }
-        text="Un matcha de cérémonie et le rituel qui l'accompagne. Un instant suspendu, mesuré au geste près."
+        text="Un matcha à fouetter et le rituel qui l'accompagne. Un instant suspendu, mesuré au geste près."
       />
 
       <section className="section">
@@ -309,8 +289,8 @@ export default async function HomePage() {
           </div>
           <div style={{ gridColumn: "8 / span 5" }}>
             <p className="lead" style={{ margin: "0 0 30px", maxWidth: "48ch" }}>
-              Cinq fragrances d&apos;intérieur et un matcha de cérémonie, livrés à Abidjan sous 24 à
-              48 h. Livraison offerte dès {formatXOF(FREE_DELIVERY_THRESHOLD)}.
+              Cinq fragrances d&apos;intérieur et un matcha, livrés à Abidjan sous 24 à 48 h.
+              Livraison offerte dès {formatXOF(FREE_DELIVERY_THRESHOLD)}.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
               <Link href="/boutique" className="btn btn-solid">

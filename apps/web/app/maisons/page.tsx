@@ -64,8 +64,8 @@ export default function MaisonsPage() {
               <span className="kai-word bold">kaï</span>
             </>
           }
-          text="Matcha premium et rituels de dégustation. Un instant suspendu, où qualité, esthétique et bien-être ne font qu'un."
-          specs={["Matcha cérémonial", "50 g", formatXOF(25000)]}
+          text="Matcha en poudre et rituels de dégustation. Un instant suspendu, où qualité, esthétique et bien-être ne font qu'un."
+          specs={["Matcha en poudre", "50 g", formatXOF(25000)]}
         />
       </section>
     </>

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s — VELYNÁLIVING",
   },
   description:
-    "Maison de parfums d'intérieur et matcha de cérémonie à Abidjan. Livraison offerte dès 50 000 F CFA.",
+    "Maison de parfums d'intérieur et de matcha à Abidjan. Livraison offerte dès 50 000 F CFA.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
