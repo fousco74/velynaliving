@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { imageSrc, getSiteImages } from "@/lib/api";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const siteImages = await getSiteImages();
+
   return (
     <div
       className="grid12"
@@ -11,7 +14,7 @@ export default function NotFound() {
         padding: "clamp(56px, 8vw, 120px) var(--gutter)",
       }}
     >
-      <div style={{ gridColumn: "1 / span 6" }}>
+      <div className="md:col-span-6 md:col-start-1">
         <p className="eyebrow" style={{ marginBottom: 24 }}>
           Erreur 404
         </p>
@@ -34,9 +37,9 @@ export default function NotFound() {
           </Link>
         </div>
       </div>
-      <div style={{ gridColumn: "8 / span 5" }}>
+      <div className="md:col-span-5 md:col-start-8">
         <Image
-          src="/assets/minuit-poudre.jpeg"
+          src={imageSrc(siteImages["not-found"])}
           alt="Minuit Poudré"
           width={800}
           height={1000}

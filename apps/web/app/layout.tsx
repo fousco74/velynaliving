@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { EB_Garamond, Jost, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteChrome } from "@/components/site-chrome";
+import { getSiteImages } from "@/lib/api";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -36,14 +37,19 @@ export const metadata: Metadata = {
     "Maison de parfums d'intérieur et de matcha à Abidjan. Livraison offerte dès 50 000 F CFA.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Le menu « Marques » de l'en-tête porte deux visuels administrables : ils
+  // sont chargés ici, une fois, et descendus en props — un composant client ne
+  // peut pas les lire lui-même.
+  const siteImages = await getSiteImages();
+
   return (
     // Les familles sont assemblées dans le thème (app/globals.css) : ici on ne
     // publie que les variables de next/font.
     <html lang="fr" className={`${playfair.variable} ${jost.variable} ${garamond.variable}`}>
       <body className="font-body bg-surface text-ink antialiased">
         <CartProvider>
-          <SiteChrome>{children}</SiteChrome>
+          <SiteChrome siteImages={siteImages}>{children}</SiteChrome>
         </CartProvider>
       </body>
     </html>

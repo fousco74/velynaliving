@@ -574,10 +574,9 @@
     gap: clamp(24px, 3vw, 52px);
   }
 
-  .product-image{
+  .product-image {
     height: 550px !important;
   }
-
 
   .product-card img {
     aspect-ratio: 3 / 4;
@@ -846,14 +845,6 @@
       grid-template-columns: 1fr;
     }
 
-    .parfum-row {
-      min-height: 0 !important;
-    }
-
-    .parfum-row > div {
-      margin-top: 0 !important;
-    }
-
     .faq-item button {
       grid-template-columns: 1fr auto;
       gap: 12px;
@@ -899,8 +890,14 @@
       gap: 28px;
     }
 
+    /* `grid-row` autant que `grid-column` : les pages posent parfois
+       « gridRow: 1 » en style inline pour aligner une image et son texte sur
+       une même ligne. Sans cette remise à zéro, les deux blocs retombent dans
+       LA MÊME cellule une fois la grille passée à une colonne — et le texte
+       s'imprime par-dessus l'image. */
     .grid12 > * {
       grid-column: 1 / -1 !important;
+      grid-row: auto !important;
     }
 
     .submenu-inner {

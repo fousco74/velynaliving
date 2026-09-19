@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { formatXOF } from "@velyna/shared";
-import { imageSrc, getProductsDetailed } from "@/lib/api";
+import { imageSrc, getProductsDetailed, getSiteImages } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Maison Velyná",
@@ -25,7 +25,10 @@ const HOW_TO = [
 ];
 
 export default async function MaisonVelynaPage() {
-  const products = await getProductsDetailed({ house: "maison-velyna", sort: "nouveaute" });
+  const [products, siteImages] = await Promise.all([
+    getProductsDetailed({ house: "maison-velyna", sort: "nouveaute" }),
+    getSiteImages(),
+  ]);
 
   return (
     <>
@@ -36,13 +39,13 @@ export default async function MaisonVelynaPage() {
           padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(40px, 6vw, 88px)",
         }}
       >
-        <div style={{ gridColumn: "1 / span 6" }}>
+        <div className="md:col-span-6 md:col-start-1">
           <p className="eyebrow" style={{ marginBottom: 24 }}>
             Marque I — Fragrances d&apos;intérieur
           </p>
           <h1
             className="display"
-            style={{ fontSize: "clamp(40px, 6.6vw, 106px)", lineHeight: 0.94 }}
+            style={{ fontSize: "clamp(36px, 6.6vw, 106px)", lineHeight: 0.94 }}
           >
             Maison <span className="italic">Velyná</span>
           </h1>
@@ -56,21 +59,16 @@ export default async function MaisonVelynaPage() {
             des souvenirs et des émotions.
           </p>
         </div>
-        <figure style={{ gridColumn: "8 / span 5", margin: 0 }}>
+        <figure className="m-0 md:col-span-5 md:col-start-8">
           <Image
-            src="/assets/les-parfums.jpeg"
+            src={imageSrc(siteImages["maison-velyna-hero"])}
             alt="Les cinq parfums Maison Velyná alignés"
             width={900}
             height={1200}
             priority
             sizes="(max-width: 860px) 100vw, 40vw"
-            style={{
-              width: "100%",
-              height: "auto",
-              maxHeight: "72vh",
-              objectFit: "cover",
-              objectPosition: "50% 100%",
-            }}
+            className="max-h-[58vh] w-full object-cover object-[50%_100%] md:max-h-[72vh]"
+            style={{ height: "auto" }}
           />
           <figcaption className="eyebrow" style={{ marginTop: 14, letterSpacing: "0.22em" }}>
             La collection complète — 250 ml
@@ -79,24 +77,28 @@ export default async function MaisonVelynaPage() {
       </section>
 
       {products.map((product, index) => {
-        const even = index % 2 === 0;
+        /*
+         * Les rangées alternent : image à gauche, puis à droite. Le placement
+         * vit dans des classes à paliers (md: ≥861px, lg: ≥1025px) et non plus
+         * en style inline — sous 861px la grille passe à une colonne et les
+         * deux blocs doivent simplement s'empiler, image d'abord.
+         */
+        const left = index % 2 === 0;
         return (
           <section
             key={product.slug}
-            className="grid12 parfum-row"
+            className="grid12 border-t border-line lg:min-h-[82vh]"
             style={{
               alignItems: "center",
-              minHeight: "82vh",
               padding: "clamp(40px, 6vw, 88px) var(--gutter)",
-              borderTop: "1px solid rgba(201,180,154,0.5)",
             }}
           >
             <div
-              style={{
-                gridRow: 1,
-                gridColumn: even ? "1 / span 6" : "7 / span 6",
-                marginTop: even ? 0 : "clamp(0px, 5vw, 80px)",
-              }}
+              className={
+                left
+                  ? "md:col-span-6 md:col-start-1 md:row-start-1"
+                  : "md:col-span-6 md:col-start-7 md:row-start-1 lg:mt-[clamp(0px,5vw,80px)]"
+              }
             >
               <Image
                 src={imageSrc(product.img)}
@@ -104,17 +106,18 @@ export default async function MaisonVelynaPage() {
                 width={900}
                 height={1125}
                 sizes="(max-width: 860px) 100vw, 50vw"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  aspectRatio: "4 / 5",
-                  objectFit: "cover",
-                  background: "#ede7df",
-                }}
+                className="aspect-4/5 w-full bg-[#ede7df] object-cover"
+                style={{ height: "auto" }}
               />
             </div>
 
-            <div style={{ gridRow: 1, gridColumn: even ? "8 / span 4" : "2 / span 4" }}>
+            <div
+              className={
+                left
+                  ? "md:col-span-5 md:col-start-8 md:row-start-1 lg:col-span-4"
+                  : "md:col-span-5 md:col-start-1 md:row-start-1 lg:col-span-4 lg:col-start-2"
+              }
+            >
               <p className="eyebrow" style={{ marginBottom: 18, letterSpacing: "0.3em" }}>
                 0{index + 1} — {product.capacity}
               </p>
@@ -147,12 +150,9 @@ export default async function MaisonVelynaPage() {
               )}
 
               <dl
+                className="grid grid-cols-[62px_1fr] gap-x-5 gap-y-3 border-t border-line"
                 style={{
                   margin: "30px 0 0",
-                  display: "grid",
-                  gridTemplateColumns: "62px 1fr",
-                  gap: "13px 20px",
-                  borderTop: "1px solid var(--line)",
                   paddingTop: 22,
                   fontFamily: "var(--sans)",
                   fontWeight: 300,
@@ -197,7 +197,7 @@ export default async function MaisonVelynaPage() {
         style={{ background: "var(--bg-soft)", borderTop: "1px solid rgba(201,180,154,0.5)" }}
       >
         <div className="grid12">
-          <div style={{ gridColumn: "1 / span 4" }}>
+          <div className="md:col-span-4 md:col-start-1">
             <p className="eyebrow" style={{ marginBottom: 20, letterSpacing: "0.3em" }}>
               Le mode d&apos;emploi
             </p>
@@ -205,13 +205,11 @@ export default async function MaisonVelynaPage() {
               L&apos;art du parfum <span className="italic">d&apos;intérieur</span>
             </h2>
           </div>
+          {/* min(100%, 220px) : sans le min(), une colonne de 220px reste exigée
+              même quand la place manque, et la grille déborde de l'écran. */}
           <div
-            style={{
-              gridColumn: "6 / span 7",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: "clamp(20px, 2.5vw, 40px)",
-            }}
+            className="grid gap-[clamp(20px,2.5vw,40px)] md:col-span-7 md:col-start-6"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}
           >
             {HOW_TO.map((step) => (
               <div key={step.title} style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>

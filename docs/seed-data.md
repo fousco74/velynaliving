@@ -5,34 +5,34 @@ Sert de source pour `apps/api/prisma/seed.ts`. **Ce fichier est une référence 
 
 ## Maisons (2)
 
-| nom | slug suggéré |
-| --- | --- |
+| nom           | slug suggéré    |
+| ------------- | --------------- |
 | Maison Velyná | `maison-velyna` |
-| Velynákaï | `velyna-kai` |
+| Velynákaï     | `velyna-kai`    |
 
 ## Produits (6)
 
 ### Champs structurés
 
-| slug | nom | maison | ref | prix (XOF) | contenance | stock | statut | nouveaute |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `santal-atelier` | Santal Atelier | Maison Velyná | `MV-SA-250` | 29900 | 250 ml | 42 | En ligne | 3 |
-| `maison-riviera` | Maison Riviera | Maison Velyná | `MV-MR-250` | 29900 | 250 ml | 28 | En ligne | 2 |
-| `fleur-de-lin` | Fleur de Lin | Maison Velyná | `MV-FL-250` | 29900 | 250 ml | 6 | En ligne | 5 |
-| `velours-dambre` | Velours d'Ambre | Maison Velyná | `MV-VA-250` | 29900 | 250 ml | 35 | En ligne | 1 |
-| `minuit-poudre` | Minuit Poudré | Maison Velyná | `MV-MP-250` | 29900 | 250 ml | 0 | Épuisé | 4 |
-| `matcha-ceremonial` | Matcha Latte | Velynákaï | `VK-MC-050` | 25000 | 50 g | 61 | En ligne | 6 |
+| slug                | nom             | maison        | ref         | prix (XOF) | contenance | stock | statut   | nouveaute |
+| ------------------- | --------------- | ------------- | ----------- | ---------- | ---------- | ----- | -------- | --------- |
+| `santal-atelier`    | Santal Atelier  | Maison Velyná | `MV-SA-250` | 29900      | 250 ml     | 42    | En ligne | 3         |
+| `maison-riviera`    | Maison Riviera  | Maison Velyná | `MV-MR-250` | 29900      | 250 ml     | 28    | En ligne | 2         |
+| `fleur-de-lin`      | Fleur de Lin    | Maison Velyná | `MV-FL-250` | 29900      | 250 ml     | 6     | En ligne | 5         |
+| `velours-dambre`    | Velours d'Ambre | Maison Velyná | `MV-VA-250` | 29900      | 250 ml     | 35    | En ligne | 1         |
+| `minuit-poudre`     | Minuit Poudré   | Maison Velyná | `MV-MP-250` | 29900      | 250 ml     | 0     | Épuisé   | 4         |
+| `matcha-ceremonial` | Matcha Latte    | Velynákaï     | `VK-MC-050` | 25000      | 50 g       | 61    | En ligne | 6         |
 
 ### Images
 
-| slug | img | imgDetail | fondDetail | encre |
-| --- | --- | --- | --- | --- |
-| `santal-atelier` | `assets/santal-atelier.jpeg` | — | — | — | 
-| `maison-riviera` | `assets/maison-riviera.jpeg` | — | — | — | 
-| `fleur-de-lin` | `assets/fleur-de-lin.jpeg` | — | — | — | 
-| `velours-dambre` | `assets/velours-dambre.jpeg` | — | — | — | 
-| `minuit-poudre` | `assets/minuit-poudre.jpeg` | — | — | — | 
-| `matcha-ceremonial` | `assets/velyna-kai.jpeg` | `assets/velynakai-produit.jpeg` | `#7C8446` | `#F4F5E8` | 
+| slug                | img                          | imgDetail                       | fondDetail | encre     |
+| ------------------- | ---------------------------- | ------------------------------- | ---------- | --------- |
+| `santal-atelier`    | `assets/santal-atelier.jpeg` | —                               | —          | —         |
+| `maison-riviera`    | `assets/maison-riviera.jpeg` | —                               | —          | —         |
+| `fleur-de-lin`      | `assets/fleur-de-lin.jpeg`   | —                               | —          | —         |
+| `velours-dambre`    | `assets/velours-dambre.jpeg` | —                               | —          | —         |
+| `minuit-poudre`     | `assets/minuit-poudre.jpeg`  | —                               | —          | —         |
+| `matcha-ceremonial` | `assets/velyna-kai.jpeg`     | `assets/velynakai-produit.jpeg` | `#7C8446`  | `#F4F5E8` |
 
 > Les fichiers `.jpeg` vivent dans le projet design (dossier `assets/`). À exporter vers `apps/web/public/produits/`.
 

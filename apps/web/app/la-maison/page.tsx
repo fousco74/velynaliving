@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { imageSrc, getSiteImages } from "@/lib/api";
 
 export const metadata: Metadata = { title: "À propos" };
 
@@ -50,7 +51,9 @@ const BELIEFS = [
   },
 ];
 
-export default function LaMaisonPage() {
+export default async function LaMaisonPage() {
+  const siteImages = await getSiteImages();
+
   return (
     <>
       <section
@@ -80,7 +83,7 @@ export default function LaMaisonPage() {
         </div>
         <figure style={{ gridColumn: "9 / span 4", margin: 0 }}>
           <Image
-            src="/assets/logo.jpeg"
+            src={imageSrc(siteImages["la-maison-logo"])}
             alt="Logo MH Velyná Group"
             width={600}
             height={600}
@@ -261,7 +264,7 @@ export default function LaMaisonPage() {
         <div className="grid12" style={{ alignItems: "start" }}>
           <div style={{ gridRow: 1, gridColumn: "1 / span 5" }}>
             <Image
-              src="/assets/fondatrice.jpeg"
+              src={imageSrc(siteImages["la-maison-founder"])}
               alt="Mani Axelle Hermine, fondatrice de MH Velyná Group"
               width={800}
               height={1066}

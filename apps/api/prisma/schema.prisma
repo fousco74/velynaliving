@@ -246,3 +246,15 @@ model Payment {
 
   @@map("payment")
 }
+
+// Remplacements des visuels livrés avec le site (hero, blocs marques, menu…).
+// Une ligne par emplacement REMPLACÉ : pas de ligne = image d'origine. Le
+// catalogue des emplacements vit dans @velyna/shared (SITE_IMAGE_SLOTS), parce
+// qu'un emplacement existe par le code qui l'affiche, pas par une donnée.
+model SiteImage {
+  key       String   @id
+  path      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_image")
+}

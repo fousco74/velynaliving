@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatArticleDate, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
-import { imageSrc, getJournal } from "@/lib/api";
+import { imageSrc, getJournal, getSiteImages } from "@/lib/api";
 
 export default async function HomePage() {
   // Les trois derniers articles publiés, tenus à jour depuis le back-office.
-  const { articles } = await getJournal();
+  const [{ articles }, siteImages] = await Promise.all([getJournal(), getSiteImages()]);
   const latest = articles.slice(0, 3);
 
   return (
@@ -20,7 +20,7 @@ export default async function HomePage() {
         }}
       >
         <Image
-          src="/assets/hero-ambiance.jpeg"
+          src={imageSrc(siteImages["home-hero"])}
           alt="Univers VELYNÁLIVING"
           fill
           priority
@@ -152,7 +152,7 @@ export default async function HomePage() {
 
       <BrandBlock
         eyebrow="Marque I"
-        img="/assets/maison-velyna.jpeg"
+        img={imageSrc(siteImages["home-brand-1"])}
         href="/maisons/maison-velyna"
         title={
           <>
@@ -167,7 +167,7 @@ export default async function HomePage() {
 
       <BrandBlock
         eyebrow="Marque II"
-        img="/assets/maison-velyna-kai.jpeg"
+        img={imageSrc(siteImages["home-brand-2"])}
         href="/maisons/velyna-kai"
         title={
           <>
@@ -227,7 +227,7 @@ export default async function HomePage() {
         <div className="grid12" style={{ alignItems: "center" }}>
           <div style={{ gridColumn: "1 / span 4" }}>
             <Image
-              src="/assets/fondatrice.jpeg"
+              src={imageSrc(siteImages["home-founder"])}
               alt="Mani Axelle Hermine, fondatrice de MH Velyná Group"
               width={600}
               height={800}

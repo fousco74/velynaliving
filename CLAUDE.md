@@ -65,6 +65,9 @@ maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
 Dockerfiles, et `docs/deploiement.md` qui couvre les deux cibles — VPS avec Docker, ou
 Laravel Forge (qui ne sait pas déployer un compose : chemin natif, daemons supervisés).
 
+**Images statiques administrables** (`/admin/images`) : hero de l'accueil, blocs des deux marques,
+vignettes du menu « Marques », pages marques, portraits de la fondatrice, logo, visuel 404.
+
 Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 
 ## Règles non négociables
@@ -102,6 +105,12 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   variables (`--ink`, `--bg`…) en sont de simples alias.
 - Le CSS maison reste enveloppé dans `@layer components` tant que la migration n'est pas finie :
   hors layer, il écraserait silencieusement les utilitaires Tailwind.
+- Le catalogue des emplacements d'images du site est dans `SITE_IMAGE_SLOTS` (`packages/shared`),
+  jamais en base : un emplacement existe parce qu'un composant l'affiche. La table `site_image` ne
+  stocke que les **remplacements**, donc supprimer la ligne rétablit le visuel livré. `GET
+  /site-images` renvoie toujours la carte complète (fusion faite côté API), et `getSiteImages()`
+  retombe sur les valeurs livrées si l'API ne répond pas — il est appelé depuis la mise en page
+  racine, donc sur chaque page du site.
 - Un schéma PATCH ne se construit **jamais** par `.partial()` sur un schéma portant des `.default()` :
   Zod garde le default et un `PATCH {}` écrit une valeur que personne n'a demandée.
 - Dans `pnpm-workspace.yaml`, `allowBuilds` et `onlyBuiltDependencies` doivent rester cohérentes :

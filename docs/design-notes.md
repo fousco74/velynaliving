@@ -6,7 +6,8 @@ Ce document décrit **ce que le produit doit faire**. Il sert de référence pou
 ## Vue d'ensemble
 
 Site e-commerce d'une maison de parfums d'ambiance + matcha, à Abidjan (Côte d'Ivoire).
-- **Deux marques (« maisons »)** : *Maison Velyná* (parfums d'intérieur 250 ml) et *Velynákaï* (matcha).
+
+- **Deux marques (« maisons »)** : _Maison Velyná_ (parfums d'intérieur 250 ml) et _Velynákaï_ (matcha).
 - **Devise** : F CFA (affichage possible en €, taux 1 € = 655,957 F CFA). Montants en entiers.
 - **Front-office public** (boutique, journal, panier, commande, suivi…) **+ back-office admin** (dashboard, commandes, produits, clients, articles, paramètres).
 
@@ -19,6 +20,7 @@ Valeurs observées : `Maison Velyná`, `Velynákaï`. C'est un simple libellé s
 5 parfums d'intérieur à **29 900 F CFA** + 1 matcha à **25 000 F CFA**.
 
 Champs observés :
+
 - `slug` (ex. `santal-atelier`, `matcha-ceremonial`) — unique, sert d'URL
 - `nom` (ex. « Santal Atelier », « Matcha Latte »)
 - `maison` (« Maison Velyná » / « Velynákaï »)
@@ -40,6 +42,7 @@ Produits : `santal-atelier`, `maison-riviera`, `fleur-de-lin`, `velours-dambre`,
 ## Articles / journal (blog)
 
 Champs observés :
+
 - `slug`, `titre`, `cat` (catégorie), `date`, `lecture` (« 6 min »), `img`, `vues` (entier), `statut` (`Publié` | `Brouillon`), `chapo`, `corps` (liste de blocs : paragraphe / titre H2 / citation).
 
 Catégories : `Rituels`, `Fragrances`, `Bien-être`, `Art de vivre`, `La Maison`.
@@ -47,6 +50,7 @@ Catégories : `Rituels`, `Fragrances`, `Bien-être`, `Art de vivre`, `La Maison`
 ## Commandes
 
 Champs observés :
+
 - `id` au format `VL-2026-XXXX`
 - `date`, `client` (nom complet), `email`, `tel`, `commune`
 - `montant` (entier F CFA, total)

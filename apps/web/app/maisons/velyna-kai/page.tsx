@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { formatXOF } from "@velyna/shared";
-import { getProducts } from "@/lib/api";
+import { imageSrc, getProducts, getSiteImages } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Velynákaï",
@@ -55,7 +55,10 @@ const ORIGIN = [
 ];
 
 export default async function VelynaKaiPage() {
-  const [matcha] = await getProducts({ house: "velyna-kai" });
+  const [[matcha], siteImages] = await Promise.all([
+    getProducts({ house: "velyna-kai" }),
+    getSiteImages(),
+  ]);
   if (!matcha) notFound();
 
   return (
@@ -110,9 +113,9 @@ export default async function VelynaKaiPage() {
             Voir le produit
           </Link>
         </div>
-        <div style={{ position: "relative", background: "#7c8446", minHeight: 780 }}>
+        <div className="relative min-h-[58vh] bg-[#7c8446] md:min-h-[640px] lg:min-h-[780px]">
           <Image
-            src="/assets/velynakai-produit.jpeg"
+            src={imageSrc(siteImages["velyna-kai-hero"])}
             alt="Boîte de Matcha Latte Velynákaï, 50 g"
             fill
             priority
@@ -129,7 +132,7 @@ export default async function VelynaKaiPage() {
           padding: "clamp(56px, 7vw, 104px) var(--gutter) clamp(48px, 6vw, 88px)",
         }}
       >
-        <div style={{ gridColumn: "1 / span 5" }}>
+        <div className="md:col-span-5 md:col-start-1">
           <p className="eyebrow" style={{ marginBottom: 20, color: "#8f9a82" }}>
             L&apos;intention
           </p>
@@ -140,9 +143,8 @@ export default async function VelynaKaiPage() {
           </h2>
         </div>
         <p
-          className="lead"
+          className="lead md:col-span-6 md:col-start-7"
           style={{
-            gridColumn: "7 / span 6",
             margin: 0,
             maxWidth: "58ch",
             fontSize: "clamp(18px, 1.5vw, 21px)",
@@ -166,26 +168,16 @@ export default async function VelynaKaiPage() {
             paddingTop: "clamp(28px, 3.5vw, 52px)",
           }}
         >
-          <div
-            style={{ gridRow: 1, gridColumn: "1 / span 6", minHeight: 340, position: "relative" }}
-          >
+          <div className="relative min-h-[300px] sm:min-h-[340px] md:col-span-6 md:col-start-1 md:row-start-1">
             <Image
-              src="/assets/velyna-kai.jpeg"
+              src={imageSrc(siteImages["velyna-kai-product"])}
               alt="Matcha Latte Velynákaï"
               fill
               sizes="(max-width: 860px) 100vw, 50vw"
               style={{ objectFit: "contain" }}
             />
           </div>
-          <div
-            style={{
-              gridRow: 1,
-              gridColumn: "8 / span 5",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
+          <div className="flex flex-col justify-center md:col-span-6 md:col-start-7 md:row-start-1 lg:col-span-5 lg:col-start-8">
             <p
               className="eyebrow"
               style={{ marginBottom: 16, letterSpacing: "0.3em", color: "#8f9a82" }}
@@ -240,7 +232,7 @@ export default async function VelynaKaiPage() {
 
       <section className="section">
         <div className="grid12" style={{ alignItems: "start" }}>
-          <div style={{ gridColumn: "1 / span 5" }}>
+          <div className="md:col-span-5 md:col-start-1">
             <p
               className="eyebrow"
               style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}
@@ -267,12 +259,9 @@ export default async function VelynaKaiPage() {
               ne pas chauffer la poudre.
             </p>
             <dl
+              className="grid grid-cols-[88px_1fr] gap-x-5 gap-y-3 border-t border-[rgba(163,175,150,0.5)]"
               style={{
                 margin: "28px 0 0",
-                display: "grid",
-                gridTemplateColumns: "88px 1fr",
-                gap: "12px 20px",
-                borderTop: "1px solid rgba(163,175,150,0.5)",
                 paddingTop: 22,
                 fontFamily: "var(--sans)",
                 fontWeight: 300,
@@ -306,7 +295,7 @@ export default async function VelynaKaiPage() {
             </dl>
           </div>
 
-          <div style={{ gridColumn: "7 / span 6" }}>
+          <div className="md:col-span-6 md:col-start-7">
             <p
               className="eyebrow"
               style={{ marginBottom: 18, letterSpacing: "0.3em", color: "#8f9a82" }}

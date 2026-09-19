@@ -482,3 +482,150 @@ export const journalQuerySchema = z.object({
 
 export type JournalInput = z.infer<typeof journalInputSchema>;
 export type JournalUpdate = z.infer<typeof journalUpdateSchema>;
+
+// ═══════════════════════ Images « en dur » du site ═══════════════════════
+
+/**
+ * Visuels livrés avec le site (`/assets/…`) que le back-office peut remplacer.
+ *
+ * Le catalogue vit ici, pas en base : c'est une propriété du CODE — tel
+ * emplacement existe parce qu'un composant l'affiche. La base ne garde que les
+ * REMPLACEMENTS. Une ligne absente signifie donc « visuel d'origine », et
+ * supprimer la ligne suffit à revenir au livré, sans script de restauration.
+ *
+ * Corollaire : retirer une image d'une page, c'est retirer son entrée d'ici —
+ * la valeur orpheline en base devient inerte, elle n'est plus jamais lue.
+ */
+export const SITE_IMAGE_SLOTS = [
+  {
+    key: "home-hero",
+    group: "Accueil",
+    label: "Image d'ouverture (hero)",
+    hint: "Plein écran, 92 % de la hauteur. Paysage, sujet légèrement au-dessus du centre.",
+    defaultPath: "/assets/hero-ambiance.jpeg",
+  },
+  {
+    key: "home-brand-1",
+    group: "Accueil",
+    label: "Bloc Marque I — Maison Velyná",
+    hint: "Moitié d'écran sur grand format, pleine largeur sur mobile.",
+    defaultPath: "/assets/maison-velyna.jpeg",
+  },
+  {
+    key: "home-brand-2",
+    group: "Accueil",
+    label: "Bloc Marque II — Velynákaï",
+    hint: "Moitié d'écran sur grand format, pleine largeur sur mobile.",
+    defaultPath: "/assets/maison-velyna-kai.jpeg",
+  },
+  {
+    key: "home-founder",
+    group: "Accueil",
+    label: "Portrait de la fondatrice",
+    hint: "Portrait 3/4, visage dans le tiers supérieur.",
+    defaultPath: "/assets/fondatrice.jpeg",
+  },
+  {
+    key: "menu-brand-1",
+    group: "Menu « Marques »",
+    label: "Vignette Maison Velyná",
+    hint: "Petite vignette paysage du menu déroulant.",
+    defaultPath: "/assets/maison-velyna.jpeg",
+  },
+  {
+    key: "menu-brand-2",
+    group: "Menu « Marques »",
+    label: "Vignette Velynákaï",
+    hint: "Petite vignette paysage du menu déroulant.",
+    defaultPath: "/assets/maison-velyna-kai.jpeg",
+  },
+  {
+    key: "brands-maison-velyna",
+    group: "Page « Les marques »",
+    label: "Rangée Maison Velyná",
+    hint: "Format 4/3.",
+    defaultPath: "/assets/maison-velyna.jpeg",
+  },
+  {
+    key: "brands-velyna-kai",
+    group: "Page « Les marques »",
+    label: "Rangée Velynákaï",
+    hint: "Format 4/3.",
+    defaultPath: "/assets/maison-velyna-kai.jpeg",
+  },
+  {
+    key: "maison-velyna-hero",
+    group: "Page Maison Velyná",
+    label: "Image d'ouverture — la collection",
+    hint: "Portrait. Le cadrage est ancré en bas de l'image.",
+    defaultPath: "/assets/les-parfums.jpeg",
+  },
+  {
+    key: "velyna-kai-hero",
+    group: "Page Velynákaï",
+    label: "Première image (bandeau vert)",
+    hint: "Recadrée en plein bloc, sujet vers le bas.",
+    defaultPath: "/assets/velynakai-produit.jpeg",
+  },
+  {
+    key: "velyna-kai-product",
+    group: "Page Velynákaï",
+    label: "Image du bloc produit",
+    hint: "Affichée entière (jamais rognée) : un fond uni vaut mieux.",
+    defaultPath: "/assets/velyna-kai.jpeg",
+  },
+  {
+    key: "not-found",
+    group: "Page 404",
+    label: "Image de la page introuvable",
+    hint: "Format 4/5.",
+    defaultPath: "/assets/minuit-poudre.jpeg",
+  },
+  {
+    key: "la-maison-logo",
+    group: "Page « La maison »",
+    label: "Logo",
+    hint: "Carré.",
+    defaultPath: "/assets/logo.jpeg",
+  },
+  {
+    key: "la-maison-founder",
+    group: "Page « La maison »",
+    label: "Portrait de la fondatrice",
+    hint: "Portrait 3/4.",
+    defaultPath: "/assets/fondatrice.jpeg",
+  },
+] as const;
+
+export type SiteImageSlot = (typeof SITE_IMAGE_SLOTS)[number];
+export type SiteImageKey = SiteImageSlot["key"];
+
+/** Chemin affichable pour chaque emplacement — jamais partiel. */
+export type SiteImages = Record<SiteImageKey, string>;
+
+export const SITE_IMAGE_KEYS: readonly SiteImageKey[] = SITE_IMAGE_SLOTS.map((slot) => slot.key);
+
+export const isSiteImageKey = (value: string): value is SiteImageKey =>
+  SITE_IMAGE_KEYS.includes(value as SiteImageKey);
+
+/**
+ * Fusionne les remplacements enregistrés avec les visuels livrés.
+ *
+ * Le résultat est toujours complet : une page n'a jamais à tester l'absence,
+ * et une clé inconnue en base (emplacement retiré du code) est ignorée.
+ */
+export const resolveSiteImages = (
+  overrides: readonly { key: string; path: string }[] = [],
+): SiteImages => {
+  const images = Object.fromEntries(
+    SITE_IMAGE_SLOTS.map((slot) => [slot.key, slot.defaultPath]),
+  ) as SiteImages;
+
+  for (const { key, path } of overrides) {
+    if (isSiteImageKey(key)) images[key] = path;
+  }
+
+  return images;
+};
+
+export const siteImageUpdateSchema = z.object({ path: imagePathSchema });

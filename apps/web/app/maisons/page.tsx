@@ -2,10 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { formatXOF } from "@velyna/shared";
+import { imageSrc, getSiteImages } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Les marques" };
 
-export default function MaisonsPage() {
+export default async function MaisonsPage() {
+  const siteImages = await getSiteImages();
+
   return (
     <>
       <section
@@ -15,7 +18,7 @@ export default function MaisonsPage() {
           padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(32px, 5vw, 72px)",
         }}
       >
-        <div style={{ gridColumn: "1 / span 7" }}>
+        <div className="md:col-span-7 md:col-start-1">
           <p className="eyebrow" style={{ marginBottom: 24 }}>
             Les marques
           </p>
@@ -25,7 +28,10 @@ export default function MaisonsPage() {
             une <span className="italic">même exigence</span>
           </h1>
         </div>
-        <p className="lead" style={{ gridColumn: "9 / span 4", margin: 0 }}>
+        <p
+          className="lead md:col-span-5 md:col-start-8 lg:col-span-4 lg:col-start-9"
+          style={{ margin: 0 }}
+        >
           MH VELYNÁ GROUP développe des marques inspirées par le bien-être, le design et l&apos;art
           de vivre. Chaque maison garde sa voix ; ce qu&apos;elles partagent, c&apos;est
           l&apos;attention portée à la matière.
@@ -35,12 +41,11 @@ export default function MaisonsPage() {
       <section style={{ padding: "0 var(--gutter) clamp(64px, 9vw, 130px)" }}>
         <BrandRow
           href="/maisons/maison-velyna"
-          img="/assets/maison-velyna.jpeg"
+          img={imageSrc(siteImages["brands-maison-velyna"])}
           alt="Maison Velyná"
           eyebrow="Marque I — depuis 2024"
           eyebrowColor="var(--muted-2)"
-          imgCol="1 / span 6"
-          txtCol="8 / span 5"
+          side="left"
           title={
             <>
               Maison <span className="italic">Velyná</span>
@@ -52,12 +57,11 @@ export default function MaisonsPage() {
 
         <BrandRow
           href="/maisons/velyna-kai"
-          img="/assets/maison-velyna-kai.jpeg"
+          img={imageSrc(siteImages["brands-velyna-kai"])}
           alt="Velynákaï"
           eyebrow="Marque II — depuis 2025"
           eyebrowColor="var(--kai-soft)"
-          imgCol="7 / span 6"
-          txtCol="1 / span 5"
+          side="right"
           title={
             <>
               <span className="kai-word thin">Velyná</span>
@@ -78,8 +82,7 @@ const BrandRow = ({
   alt,
   eyebrow,
   eyebrowColor,
-  imgCol,
-  txtCol,
+  side,
   title,
   text,
   specs,
@@ -89,8 +92,8 @@ const BrandRow = ({
   alt: string;
   eyebrow: string;
   eyebrowColor: string;
-  imgCol: string;
-  txtCol: string;
+  /** Côté de l'image à partir de 861px. Sous ce seuil, tout s'empile. */
+  side: "left" | "right";
   title: React.ReactNode;
   text: string;
   specs: string[];
@@ -104,7 +107,13 @@ const BrandRow = ({
       borderTop: "1px solid var(--line)",
     }}
   >
-    <div style={{ gridRow: 1, gridColumn: imgCol }}>
+    <div
+      className={
+        side === "left"
+          ? "md:col-span-6 md:col-start-1 md:row-start-1"
+          : "md:col-span-6 md:col-start-7 md:row-start-1"
+      }
+    >
       <Image
         src={img}
         alt={alt}
@@ -120,7 +129,13 @@ const BrandRow = ({
         }}
       />
     </div>
-    <div style={{ gridRow: 1, gridColumn: txtCol }}>
+    <div
+      className={
+        side === "left"
+          ? "md:col-span-5 md:col-start-8 md:row-start-1"
+          : "md:col-span-5 md:col-start-1 md:row-start-1"
+      }
+    >
       <p
         className="eyebrow"
         style={{ marginBottom: 20, letterSpacing: "0.3em", color: eyebrowColor }}

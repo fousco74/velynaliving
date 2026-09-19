@@ -91,7 +91,8 @@ orderRouter.post("/", async (req, res) => {
     });
   }
 
-  const promoCode = input.promoCode && isPromoCode(input.promoCode) ? input.promoCode.toUpperCase() : null;
+  const promoCode =
+    input.promoCode && isPromoCode(input.promoCode) ? input.promoCode.toUpperCase() : null;
   const totals = computeTotals(lines, input.deliveryMethod, promoCode);
   const email = input.email.toLowerCase();
 

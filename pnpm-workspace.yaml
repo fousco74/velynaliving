@@ -8,11 +8,11 @@ packages:
 # doivent donc rester cohérentes — esbuild absent d'ici faisait échouer tout
 # `pnpm install` sur un store vide (clone neuf, image Docker, CI).
 allowBuilds:
-  '@prisma/engines': false
+  "@prisma/engines": false
   prisma: false
   unrs-resolver: false
   esbuild: true
-  '@prisma/client': true
+  "@prisma/client": true
   sharp: true
 
 onlyBuiltDependencies:

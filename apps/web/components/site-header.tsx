@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import type { SiteImages } from "@velyna/shared";
+import { imageSrc } from "@/lib/api";
 import { useCart } from "./cart-provider";
 
 const LINKS = [
@@ -14,7 +16,7 @@ const LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export const SiteHeader = () => {
+export const SiteHeader = ({ siteImages }: { siteImages: SiteImages }) => {
   const pathname = usePathname();
   const { count, ready } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -93,7 +95,7 @@ export const SiteHeader = () => {
           <div className="submenu-inner">
             <Link href="/maisons/maison-velyna" className="submenu-card">
               <Image
-                src="/assets/maison-velyna.jpeg"
+                src={imageSrc(siteImages["menu-brand-1"])}
                 alt="Maison Velyná"
                 width={640}
                 height={480}
@@ -103,7 +105,7 @@ export const SiteHeader = () => {
             </Link>
             <Link href="/maisons/velyna-kai" className="submenu-card">
               <Image
-                src="/assets/maison-velyna-kai.jpeg"
+                src={imageSrc(siteImages["menu-brand-2"])}
                 alt="Velynákaï"
                 width={640}
                 height={480}

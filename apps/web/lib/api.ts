@@ -1,3 +1,5 @@
+import { resolveSiteImages, type SiteImageKey, type SiteImages } from "@velyna/shared";
+
 /** Adresse publique de l'API : la seule qui ait un sens pour un navigateur. */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4001";
 
@@ -427,6 +429,50 @@ export const deleteArticle = (slug: string) =>
   request<{ slug: string; deleted: boolean }>(`/admin/journal/${encodeURIComponent(slug)}`, {
     method: "DELETE",
   });
+
+// ─────────────────────── Images du site ───────────────────────
+
+/**
+ * Visuels « en dur » du site (hero, blocs marques, menu…), remplacements
+ * appliqués. Le catalogue des emplacements vit dans `@velyna/shared`.
+ *
+ * L'appel ne peut PAS échouer : il est fait dans la mise en page racine, donc
+ * sur chaque page du site. Une API indisponible doit dégrader vers les visuels
+ * livrés, jamais faire tomber la page entière.
+ */
+export const getSiteImages = async (): Promise<SiteImages> => {
+  try {
+    return await request<SiteImages>("/site-images");
+  } catch {
+    return resolveSiteImages();
+  }
+};
+
+export type AdminSiteImage = {
+  key: SiteImageKey;
+  group: string;
+  label: string;
+  hint: string;
+  defaultPath: string;
+  path: string;
+  /** Faux tant que l'emplacement porte encore le visuel livré avec le site. */
+  custom: boolean;
+  updatedAt: string | null;
+};
+
+export const getAdminSiteImages = () => request<AdminSiteImage[]>("/admin/site-images");
+
+export const updateSiteImage = (key: SiteImageKey, path: string) =>
+  request<{ key: string; path: string; custom: boolean }>(
+    `/admin/site-images/${encodeURIComponent(key)}`,
+    { method: "PUT", body: JSON.stringify({ path }) },
+  );
+
+export const resetSiteImage = (key: SiteImageKey) =>
+  request<{ key: string; path: string; custom: boolean; reset: boolean }>(
+    `/admin/site-images/${encodeURIComponent(key)}`,
+    { method: "DELETE" },
+  );
 
 // ─────────────────────── Images ───────────────────────
 

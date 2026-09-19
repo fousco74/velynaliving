@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import type { SiteImages } from "@velyna/shared";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -13,14 +14,20 @@ import { SiteFooter } from "@/components/site-footer";
  * point de décision ici coûte moins cher et se défait en une minute le jour
  * où l'admin justifie sa propre racine.
  */
-export const SiteChrome = ({ children }: { children: React.ReactNode }) => {
+export const SiteChrome = ({
+  children,
+  siteImages,
+}: {
+  children: React.ReactNode;
+  siteImages: SiteImages;
+}) => {
   const pathname = usePathname();
 
   if (pathname.startsWith("/admin")) return <>{children}</>;
 
   return (
     <div className="shell">
-      <SiteHeader />
+      <SiteHeader siteImages={siteImages} />
       <main>{children}</main>
       <SiteFooter />
     </div>
