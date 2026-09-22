@@ -298,9 +298,8 @@ export default async function LaMaisonPage() {
                 color: "var(--ink-2)",
               }}
             >
-              L&apos;histoire de MH VELYNÁ GROUP est avant tout une histoire personnelle, née
-              d&apos;une évolution naturelle et d&apos;une passion qui s&apos;est révélée au fil des
-              années.
+              Certaines maisons naissent d&apos;une idée. MH VELYNÁ GROUP est née d&apos;une
+              conviction.
             </p>
             <p
               style={{
@@ -311,12 +310,11 @@ export default async function LaMaisonPage() {
                 color: "var(--ink-3)",
               }}
             >
-              En devenant adulte, MANI AXELLE HERMINE a découvert une véritable appréciation pour
-              l&apos;univers de la maison : les matières, les détails, l&apos;harmonie des espaces
-              et tout ce qui transforme un lieu de vie en un espace où l&apos;on se sent pleinement
-              soi-même. Cette sensibilité grandissante a fait naître une envie profonde : créer un
-              groupe capable de réunir des marques pensées autour de l&apos;art de vivre, de
-              l&apos;élégance et du bien-être au quotidien.
+              Depuis toujours, Mani Axelle Hermine cultive une fascination pour les matières, les
+              savoir-faire et les objets qui traversent le temps avec grâce. Pour elle, le véritable
+              luxe ne réside ni dans l&apos;abondance ni dans l&apos;ostentation, mais dans la
+              justesse d&apos;une création, la noblesse d&apos;une matière et l&apos;émotion
+              silencieuse qu&apos;un lieu peut susciter.
             </p>
             <p
               style={{
@@ -327,9 +325,12 @@ export default async function LaMaisonPage() {
                 color: "var(--ink-3)",
               }}
             >
-              Guidée par sa créativité, son exigence et son amour du beau, elle souhaite transmettre
-              une vision de l&apos;habitat où chaque détail compte, où chaque objet raconte une
-              histoire et où la maison devient bien plus qu&apos;un lieu : une expression de soi.
+              Cette vision a donné naissance à MH VELYNÁ GROUP, une maison qui rassemble des marques
+              unies par une même exigence : concevoir avec intention, sélectionner avec discernement
+              et créer des univers où chaque détail trouve naturellement sa place. Animée par une
+              quête constante d&apos;excellence et d&apos;intemporalité, elle imagine des
+              collections qui privilégient la permanence aux tendances, la sincérité à l&apos;effet,
+              et l&apos;élégance à l&apos;excès.
             </p>
             <blockquote
               style={{
