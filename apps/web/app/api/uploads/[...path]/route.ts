@@ -30,8 +30,16 @@ export async function GET(_request: Request, context: { params: Promise<{ path: 
     () => null,
   );
 
-  if (!upstream?.ok || !upstream.body) {
-    return new Response("Not found", { status: 404 });
+  // Deux pannes très différentes se ressemblent dans l'onglet Réseau si on
+  // renvoie 404 pour les deux : l'API injoignable (éteinte, mauvais
+  // API_INTERNAL_URL) est un 502, le fichier absent du disque un 404.
+  if (!upstream) {
+    console.error(`Relais uploads : ${API_BASE_URL} injoignable`);
+    return new Response("Bad gateway", { status: 502 });
+  }
+
+  if (!upstream.ok || !upstream.body) {
+    return new Response("Not found", { status: upstream.status === 404 ? 404 : 502 });
   }
 
   return new Response(upstream.body, {
