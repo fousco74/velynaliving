@@ -14,8 +14,12 @@ const schema = z.object({
    * Répertoire des images téléversées depuis le back-office.
    *
    * Hors du dépôt et hors du build : ce sont des données, au même titre que la
-   * base. En production, y monter un volume persistant — sinon chaque
-   * redéploiement repartirait d'un dossier vide.
+   * base. En production, un volume persistant (Docker) ou un dossier dédié du
+   * serveur (Forge) — sinon chaque redéploiement repartirait d'un dossier vide.
+   *
+   * Le défaut relatif ne vaut que pour le développement : en production, la
+   * garde de `lib/uploads.ts` refuse un chemin relatif ou pris dans le dossier
+   * de déploiement.
    */
   UPLOAD_DIR: z.string().min(1).default("uploads"),
   /** Taille maximale d'une image téléversée, en mégaoctets. */

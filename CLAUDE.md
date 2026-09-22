@@ -86,8 +86,11 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   et sert aux rendus serveur (réseau interne).
 - Les images téléversées passent par le relais `/api/uploads/…` du front : URL relative, donc
   ni CORS, ni `remotePatterns`, ni dépendance au DNS public depuis le conteneur.
-- `UPLOAD_DIR` doit pointer vers un emplacement **persistant et hors du dépôt**. Sans volume,
-  chaque redéploiement efface les images.
+- `UPLOAD_DIR` doit pointer vers un emplacement **persistant, absolu et hors du dossier de
+  déploiement**. Sans volume (Docker) ou dossier dédié (Forge), chaque redéploiement efface les
+  images : sur un hébergement à releases atomiques, un chemin relatif suit le `cwd` du service,
+  atterrit dans `releases/<id>/…` et meurt avec elle, pendant que la base continue de référencer
+  `/uploads/…`. En production, l'API **refuse de démarrer** dans ce cas (`apps/api/src/lib/uploads.ts`).
 - Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
   publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
   (compteur de vues) et `POST /auth/login|logout`.
@@ -108,7 +111,7 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 - Le catalogue des emplacements d'images du site est dans `SITE_IMAGE_SLOTS` (`packages/shared`),
   jamais en base : un emplacement existe parce qu'un composant l'affiche. La table `site_image` ne
   stocke que les **remplacements**, donc supprimer la ligne rétablit le visuel livré. `GET
-  /site-images` renvoie toujours la carte complète (fusion faite côté API), et `getSiteImages()`
+/site-images` renvoie toujours la carte complète (fusion faite côté API), et `getSiteImages()`
   retombe sur les valeurs livrées si l'API ne répond pas — il est appelé depuis la mise en page
   racine, donc sur chaque page du site.
 - Un schéma PATCH ne se construit **jamais** par `.partial()` sur un schéma portant des `.default()` :

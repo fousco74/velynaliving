@@ -1,12 +1,59 @@
 import { mkdirSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { isAbsolute, resolve } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
 import { env } from "../config/env.js";
 
-/** Résolu une fois : un chemin relatif part de la racine de l'API, pas du cwd. */
+/**
+ * Résolu une fois, au démarrage.
+ *
+ * Un chemin relatif part du répertoire courant du PROCESSUS — donc de là où le
+ * gestionnaire de services a lancé l'API, pas de la racine du dépôt.
+ */
 export const UPLOAD_DIR = isAbsolute(env.UPLOAD_DIR)
   ? env.UPLOAD_DIR
   : resolve(process.cwd(), env.UPLOAD_DIR);
+
+/**
+ * En production, le dossier doit être choisi explicitement et vivre hors du
+ * dossier de déploiement.
+ *
+ * Un hébergement à releases atomiques (Laravel Forge, Deployer, Capistrano)
+ * installe chaque déploiement dans `releases/<horodatage>` puis fait pointer
+ * `current` dessus. Un chemin relatif suit le répertoire de lancement du
+ * service, atterrit donc DANS la release, et le déploiement suivant repart
+ * d'un dossier vide pendant que la base continue de référencer `/uploads/…` :
+ * les images « disparaissent » du site, puis l'ancienne release est purgée et
+ * les fichiers avec elle.
+ *
+ * On refuse de démarrer plutôt que d'écrire dans un dossier condamné : la
+ * perte ne se voit qu'au déploiement d'après, quand il est déjà trop tard.
+ */
+const refuserUploadDir = (raison: string): never => {
+  console.error(
+    [
+      `UPLOAD_DIR inutilisable en production : ${raison}.`,
+      `  valeur reçue  : ${env.UPLOAD_DIR}`,
+      `  chemin résolu : ${UPLOAD_DIR}`,
+      "  Attendu : un chemin ABSOLU, hors du dossier de déploiement et conservé",
+      "  d'un déploiement à l'autre (ex. /home/forge/velyna-uploads), ou un",
+      "  volume persistant monté à cet emplacement.",
+    ].join("\n"),
+  );
+  process.exit(1);
+};
+
+if (env.NODE_ENV === "production") {
+  if (!isAbsolute(env.UPLOAD_DIR)) {
+    refuserUploadDir("le chemin est relatif, donc suspendu au répertoire de lancement");
+  }
+
+  // Un chemin absolu peut très bien désigner l'intérieur de la release : c'est
+  // le piège exact des déploiements atomiques, on le nomme.
+  const segments = UPLOAD_DIR.split(sep);
+  if (segments.includes("releases") || segments.includes("current")) {
+    refuserUploadDir("le chemin traverse le dossier de déploiement (releases/ ou current)");
+  }
+}
 
 mkdirSync(UPLOAD_DIR, { recursive: true });
 

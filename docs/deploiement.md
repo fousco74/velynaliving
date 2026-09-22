@@ -148,8 +148,11 @@ sort du chemin balisé. Tout se fait depuis l'interface, sauf mention contraire.
 
 | Site                  | Type                  | Rôle                               |
 | --------------------- | --------------------- | ---------------------------------- |
-| `velynaliving.ci`     | Static HTML / Next.js | porte le dépôt, proxy vers `:3002` |
-| `api.velynaliving.ci` | Static HTML           | **aucun code**, proxy vers `:4001` |
+| `velynaliving.ci`     | Static HTML / Next.js | porte le dépôt, proxy vers `:3000` |
+| `api.velynaliving.ci` | Static HTML           | **aucun code**, proxy vers `:4000` |
+
+Les ports diffèrent de ceux du chemin Docker (3002 / 4001) : ici ce sont ceux
+de la configuration PM2 (B5), à reporter tels quels dans les `proxy_pass`.
 
 Sur chaque site, **Edit Nginx Configuration** et remplacer le bloc `location /`
 par le `proxy_pass` correspondant (voir A4, en-têtes compris ;
@@ -160,71 +163,130 @@ Sur le site principal : **Git Repository** → dépôt, branche `main`,
 
 Puis **SSL → Let's Encrypt** sur les deux sites.
 
-### B3. Configuration
+### B3. Le fichier `.env` du site
 
-En SSH, créer le fichier d'environnement de l'API — Forge gère un `.env` par
-site, mais l'API lit le sien dans `apps/api/` :
+Forge gère **un** `.env` par site (**Site → Environment**), et le script de
+déploiement le recopie vers les deux applications :
 
 ```bash
-cd /home/forge/velynaliving.ci
-cp apps/api/.env.example apps/api/.env
-nano apps/api/.env
+cp .env apps/api/.env
+cp .env apps/web/.env
 ```
 
-Valeurs de production :
+Un seul fichier porte donc la configuration de l'API _et_ du front :
 
 ```
 NODE_ENV=production
-PORT=4001
 DATABASE_URL=postgresql://velyna:<mot-de-passe>@127.0.0.1:5432/velyna
 CORS_ORIGIN=https://velynaliving.ci
 SESSION_SECRET=<openssl rand -base64 48>
 SESSION_HOURS=12
-UPLOAD_DIR=/home/forge/velyna-uploads
 UPLOAD_MAX_MB=5
 TRUST_PROXY=1
+
+# Chemin ABSOLU, hors du dossier de déploiement. Voir l'encadré de B4 :
+# c'est la seule chose qui empêche les images de disparaître à chaque
+# déploiement. Le dossier se crée une fois, à la main.
+UPLOAD_DIR=/home/forge/velyna-uploads
+
+# Inscrite dans le bundle navigateur AU BUILD — elle doit donc être présente
+# dans ce fichier avant `next build`, ce que garantit le `cp` ci-dessus.
+NEXT_PUBLIC_API_URL=https://api.velynaliving.ci
+
+# Lue à l'EXÉCUTION par `next start`, pour les rendus serveur et le relais
+# d'images : l'API est sur la même machine, autant la joindre en local plutôt
+# que de ressortir par le DNS public, TLS et nginx pour un fichier local.
+# Le port doit être celui que PM2 donne à l'API (voir B5).
+API_INTERNAL_URL=http://127.0.0.1:4000
 ```
 
 ```bash
 mkdir -p /home/forge/velyna-uploads
 ```
 
-`UPLOAD_DIR` pointe **hors du dépôt** : les images téléversées sont des données,
-elles ne doivent pas dépendre du dossier de déploiement.
+`PORT` n'y figure pas : PM2 le fournit à l'API et `next start --port` au front
+(B5). C'est volontaire — `dotenv` n'écrase jamais une variable déjà présente
+dans l'environnement, donc la valeur de PM2 gagne de toute façon.
 
-### B4. Script de déploiement
+### B4. Script de déploiement — releases atomiques
 
-**Site → Deploy Script** :
+**Site → Deploy Script**. Forge crée un dossier neuf par déploiement
+(`releases/<horodatage>`) et bascule le lien `current` dessus une fois le build
+réussi : c'est ce qui rend le déploiement atomique.
 
 ```bash
-cd /home/forge/velynaliving.ci
-git pull origin main
+$CREATE_RELEASE()
 
-export PATH="$HOME/.local/share/pnpm:$PATH"
-corepack enable
+cd $FORGE_RELEASE_DIRECTORY
+
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME/bin:$PATH"
+export NEXT_TELEMETRY_DISABLED=1
+
+cp .env apps/api/.env
+cp .env apps/web/.env
 
 pnpm install --frozen-lockfile
-pnpm --filter @velyna/api prisma:generate
-pnpm --filter @velyna/api migrate:deploy
+pnpm --filter @velyna/api exec prisma generate
+pnpm --filter @velyna/api exec prisma migrate deploy
+pnpm --filter @velyna/web build
 
-# ⚠️ Inscrit dans le bundle navigateur : doit être présent AU BUILD.
-NEXT_PUBLIC_API_URL=https://api.velynaliving.ci pnpm --filter @velyna/web build
+$ACTIVATE_RELEASE()
 
-sudo -S supervisorctl restart all
+# Config PM2 : voir B5.
 ```
 
-### B5. Daemons
+> ⚠️ **Tout ce qui n'est pas dans le dépôt meurt avec la release.**
+>
+> Les anciennes releases sont purgées après quelques déploiements. Un
+> `UPLOAD_DIR` relatif (la valeur par défaut, `uploads`) est résolu depuis le
+> répertoire de lancement du service, soit `current/apps/api` — donc **dans**
+> la release. Le déploiement suivant repart d'un dossier vide pendant que la
+> base continue de référencer `/uploads/…` : les images du back-office
+> disparaissent du site, puis les fichiers sont supprimés avec l'ancienne
+> release. C'est pour cela que l'API refuse désormais de démarrer en
+> production avec un `UPLOAD_DIR` relatif, ou qui traverse `releases/` ou
+> `current`.
 
-**Server → Daemons**, deux entrées, répertoire `/home/forge/velynaliving.ci`,
-utilisateur `forge` :
+**Récupérer des images déjà perdues** — tant que les releases concernées n'ont
+pas été purgées :
 
-| Commande                          | Rôle                   |
-| --------------------------------- | ---------------------- |
-| `pnpm --filter @velyna/api start` | API sur le port 4001   |
-| `pnpm --filter @velyna/web start` | front sur le port 3002 |
+```bash
+SITE=/home/forge/<site>          # ex. velynaliving-qgvhqp7v.on-forge.com
+ls -d $SITE/releases/*/apps/api/uploads 2>/dev/null
+mkdir -p /home/forge/velyna-uploads
+cp -an $SITE/releases/*/apps/api/uploads/. /home/forge/velyna-uploads/ 2>/dev/null
+```
+
+`cp -a -n` préserve les dates et n'écrase rien : les noms de fichiers portent un
+suffixe aléatoire, deux releases ne peuvent pas se contredire. Ce qui manque
+encore se re-téléverse depuis `/admin` ; pour un emplacement statique
+(`/admin/images`), supprimer le remplacement rétablit le visuel livré.
+
+### B5. Processus — PM2
+
+Deux processus, lancés depuis `current/apps/<app>` et réécrits à chaque
+déploiement :
+
+| Processus    | Répertoire         | Commande                                  | Port   |
+| ------------ | ------------------ | ----------------------------------------- | ------ |
+| `velyna-web` | `current/apps/web` | `next start --hostname 127.0.0.1 -p 3000` | `3000` |
+| `velyna-api` | `current/apps/api` | `src/server.ts` (`node --import tsx`)     | `4000` |
+
+```bash
+pm2 startOrReload /home/forge/.pm2-conf/site-<id>.json --update-env
+pm2 save
+```
+
+Les ports doivent correspondre à ceux des `proxy_pass` nginx (B2) et à
+`API_INTERNAL_URL` (B3). `--update-env` est nécessaire : sans lui, PM2
+relancerait les processus avec l'environnement du déploiement précédent.
 
 La sortie « standalone » de Next n'est **pas** active ici (elle l'est
 uniquement dans l'image Docker, via `STANDALONE=1`) : `next start` fonctionne.
+
+Au démarrage, l'API journalise le dossier d'images réellement utilisé —
+`pm2 logs velyna-api` répond donc directement à « où sont écrites les images ? ».
 
 ---
 
@@ -235,8 +297,8 @@ uniquement dans l'image Docker, via `STANDALONE=1`) : `next start` fonctionne.
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api pnpm db:seed
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api pnpm admin:create <email> <mot-de-passe>
 
-# Forge
-cd /home/forge/velynaliving.ci
+# Forge — toujours depuis `current`, le lien vers la release active
+cd /home/forge/<site>/current
 pnpm --filter @velyna/api db:seed
 pnpm --filter @velyna/api admin:create <email> <mot-de-passe>
 ```
