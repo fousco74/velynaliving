@@ -49,9 +49,9 @@ const BENEFITS = [
 ];
 
 const ORIGIN = [
-  ["Origine", "Uji, Kyoto"],
-  ["Récolte", "Ichibancha, mai"],
-  ["Mouture", "Meule de pierre"],
+  ["Origine", "Hangzhou, Zhejiang"],
+  ["Récolte", "Mai 2026"],
+  ["Mouture", "Billes en céramique"],
 ];
 
 export default async function VelynaKaiPage() {
@@ -151,11 +151,11 @@ export default async function VelynaKaiPage() {
             color: "#3a3e33",
           }}
         >
-          Le matcha est un thé vert japonais réduit en une poudre très fine. Là où le thé vert
-          classique s&apos;infuse puis se retire, le matcha se fouette directement dans l&apos;eau
-          et se boit entièrement, feuille comprise — d&apos;où sa densité en bouche et son énergie
-          longue. Velynákaï en fait un rituel : un moment d&apos;équilibre et de sérénité, où
-          qualité, esthétique et bien-être ne font qu&apos;un.
+          Le matcha est un thé vert réduit en une poudre très fine. Là où le thé vert classique
+          s&apos;infuse puis se retire, le matcha se fouette directement dans l&apos;eau et se boit
+          entièrement, feuille comprise — d&apos;où sa densité en bouche et son énergie longue.
+          Velynákaï en fait un rituel : un moment d&apos;équilibre et de sérénité, où qualité,
+          esthétique et bien-être ne font qu&apos;un.
         </p>
       </section>
 
@@ -196,9 +196,9 @@ export default async function VelynaKaiPage() {
                 color: "#3a3e33",
               }}
             >
-              Feuilles de première récolte ombrées trois semaines avant la cueillette, puis broyées
-              lentement à la meule de pierre. Une poudre vert jade, dense, sans amertume sèche, qui
-              monte en mousse fine et tient longtemps en bouche.
+              Feuilles de la récolte de mai, finement broyées à billes en céramique. Une poudre vert
+              jade, dense, sans amertume sèche, qui monte en mousse fine et tient longtemps en
+              bouche.
             </p>
             <div
               style={{
@@ -240,9 +240,9 @@ export default async function VelynaKaiPage() {
               L&apos;origine
             </p>
             <h2 className="h2" style={{ fontSize: "clamp(24px, 2.6vw, 40px)", marginBottom: 20 }}>
-              Feuille d&apos;ombre,
+              Un terroir d&apos;exception,
               <br />
-              <span className="italic">première récolte</span>
+              <span className="italic">Hangzhou, Zhejiang</span>
             </h2>
             <p
               style={{
@@ -253,10 +253,11 @@ export default async function VelynaKaiPage() {
                 color: "#3a3e33",
               }}
             >
-              Les théiers sont ombrés trois semaines avant la cueillette : privée de lumière
-              directe, la feuille concentre ses acides aminés et perd son amertume. Seule la
-              première récolte de mai est retenue, puis broyée lentement à la meule de pierre pour
-              ne pas chauffer la poudre.
+              Au cœur d&apos;une région emblématique de la culture du thé en Chine, notre matcha est
+              issu d&apos;un terroir reconnu pour ses sols riches et ses conditions propices à la
+              culture du thé vert. Récolté en mai 2026, il est finement broyé selon une technologie
+              de broyage à billes en céramique, qui préserve l&apos;intensité de la couleur, la
+              finesse de la texture et la richesse aromatique.
             </p>
             <dl
               className="grid grid-cols-[88px_1fr] gap-x-5 gap-y-3 border-t border-[rgba(163,175,150,0.5)]"

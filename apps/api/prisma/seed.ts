@@ -150,7 +150,7 @@ const products = [
     usage: null,
     ambiance: "Un instant suspendu, mesuré au geste près",
     description:
-      "Feuilles de première récolte ombrées trois semaines avant la cueillette, puis broyées lentement à la meule de pierre. Une poudre vert jade, dense, sans amertume sèche, qui monte en mousse fine et tient longtemps en bouche.",
+      "Feuilles de la récolte de mai, finement broyées à billes en céramique. Une poudre vert jade, dense, sans amertume sèche, qui monte en mousse fine et tient longtemps en bouche.",
     status: "ONLINE" as const,
   },
 ];
