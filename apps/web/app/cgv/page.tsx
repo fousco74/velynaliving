@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Conditions générales de vente" };
 const SECTIONS: { heading: string; text: string }[] = [
   {
     heading: "1. Objet",
-    text: "Les présentes conditions régissent les ventes conclues sur velynaliving.com, édité par MH VELYNÁ GROUP, Cocody, Abidjan, Côte d'Ivoire.",
+    text: "Les présentes conditions régissent les ventes conclues sur velynaliving.com, édité par MH VELYNÁ GROUP, Cocody Angré, Abidjan, Côte d'Ivoire.",
   },
   {
     heading: "2. Produits et prix",
@@ -17,7 +17,7 @@ const SECTIONS: { heading: string; text: string }[] = [
   },
   {
     heading: "4. Livraison",
-    text: "Abidjan : 2 000 F CFA, 24 à 48 h. Intérieur du pays : 5 000 F CFA, 3 à 5 jours ouvrés. Retrait gratuit en boutique à Cocody. Livraison offerte dès 50 000 F CFA. Les délais sont donnés à titre indicatif.",
+    text: "Abidjan : 2 000 F CFA, 24 à 48 h. Intérieur du pays : 5 000 F CFA, 3 à 5 jours ouvrés. Retrait gratuit en boutique à Cocody Angré. Livraison offerte dès 50 000 F CFA. Les délais sont donnés à titre indicatif.",
   },
   {
     heading: "5. Droit de rétractation",

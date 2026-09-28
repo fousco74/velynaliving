@@ -163,7 +163,7 @@ export default function ContactPage() {
               <p style={{ margin: 0, fontSize: 17, lineHeight: 1.7, color: "var(--ink-3)" }}>
                 MH Velyná Group
                 <br />
-                Rue des Jardins, Cocody
+                Cocody Angré
                 <br />
                 Abidjan, Côte d&apos;Ivoire
               </p>

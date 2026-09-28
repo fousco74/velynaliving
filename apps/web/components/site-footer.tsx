@@ -36,7 +36,7 @@ export const SiteFooter = () => (
             color: "var(--ink-2)",
           }}
         >
-          Cocody, Abidjan — Côte d&apos;Ivoire
+          Cocody Angré, Abidjan — Côte d&apos;Ivoire
         </p>
       </div>
 

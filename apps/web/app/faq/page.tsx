@@ -22,7 +22,7 @@ const FAQS = [
   {
     cat: "Livraison",
     q: "Quels sont les délais et les tarifs ?",
-    r: "Abidjan : 2 000 F CFA, livré en 24 à 48 h. Intérieur du pays : 5 000 F CFA, 3 à 5 jours ouvrés. Retrait en boutique à Cocody : gratuit, sous 24 h. Livraison offerte dès 50 000 F CFA d'achat.",
+    r: "Abidjan : 2 000 F CFA, livré en 24 à 48 h. Intérieur du pays : 5 000 F CFA, 3 à 5 jours ouvrés. Retrait en boutique à Cocody Angré : gratuit, sous 24 h. Livraison offerte dès 50 000 F CFA d'achat.",
   },
   {
     cat: "Livraison",

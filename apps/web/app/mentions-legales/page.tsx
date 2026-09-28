@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Mentions légales" };
 const SECTIONS: { heading: string; text: string }[] = [
   {
     heading: "Éditeur",
-    text: "MH VELYNÁ GROUP — Cocody, Abidjan, Côte d'Ivoire. Contact : service@velynaliving.com.",
+    text: "MH VELYNÁ GROUP — Cocody Angré, Abidjan, Côte d'Ivoire. Contact : service@velynaliving.com.",
   },
   {
     heading: "Directrice de la publication",

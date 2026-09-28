@@ -16,7 +16,7 @@ const OPTIONS = [
   {
     label: "Retrait en boutique",
     price: "Gratuit",
-    text: "Rue des Jardins, Cocody. Votre commande est prête sous 24 h, du lundi au samedi.",
+    text: "Cocody Angré. Votre commande est prête sous 24 h, du lundi au samedi.",
   },
 ];
 
