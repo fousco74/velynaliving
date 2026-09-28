@@ -253,11 +253,11 @@ export default async function VelynaKaiPage() {
                 color: "#3a3e33",
               }}
             >
-              Au cœur d&apos;une région emblématique de la culture du thé en Chine, notre matcha est
-              issu d&apos;un terroir reconnu pour ses sols riches et ses conditions propices à la
-              culture du thé vert. Récolté en mai 2026, il est finement broyé selon une technologie
-              de broyage à billes en céramique, qui préserve l&apos;intensité de la couleur, la
-              finesse de la texture et la richesse aromatique.
+              Au cœur d&apos;une région emblématique de la culture du thé, notre matcha est issu
+              d&apos;un terroir reconnu pour ses sols riches et ses conditions propices à la culture
+              du thé vert. Récolté en mai 2026, il est finement broyé selon une technologie de
+              broyage à billes en céramique, qui préserve l&apos;intensité de la couleur, la finesse
+              de la texture et la richesse aromatique.
             </p>
             <dl
               className="grid grid-cols-[88px_1fr] gap-x-5 gap-y-3 border-t border-[rgba(163,175,150,0.5)]"
