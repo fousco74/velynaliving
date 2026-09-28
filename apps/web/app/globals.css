@@ -57,6 +57,12 @@
   --color-kai-soft: #6f7b63;
   --color-kai-light: #b9c48a;
 
+  /* Maison Velyná — rouge bordeaux */
+  --color-velyna: #5e1a24;
+  --color-velyna-soft: #8a4a52;
+  --color-velyna-light: #e8cfcb;
+  --color-velyna-wash: #fbf6f4;
+
   /* Typographie — les familles viennent de next/font (apps/web/app/layout.tsx) */
   --font-serif: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-jost), "Helvetica Neue", Arial, sans-serif;
@@ -102,6 +108,10 @@
   --kai: var(--color-kai);
   --kai-soft: var(--color-kai-soft);
   --kai-light: var(--color-kai-light);
+  --velyna: var(--color-velyna);
+  --velyna-soft: var(--color-velyna-soft);
+  --velyna-light: var(--color-velyna-light);
+  --velyna-wash: var(--color-velyna-wash);
   --serif: var(--font-serif);
   --sans: var(--font-sans);
   --body: var(--font-body);

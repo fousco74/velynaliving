@@ -31,16 +31,16 @@ export default async function MaisonVelynaPage() {
   ]);
 
   return (
-    <>
+    <div className="bg-velyna-wash">
       <section
-        className="grid12"
+        className="grid12 bg-velyna text-cream"
         style={{
           alignItems: "end",
           padding: "clamp(56px, 8vw, 120px) var(--gutter) clamp(40px, 6vw, 88px)",
         }}
       >
         <div className="md:col-span-6 md:col-start-1">
-          <p className="eyebrow" style={{ marginBottom: 24 }}>
+          <p className="eyebrow text-velyna-light/80" style={{ marginBottom: 24 }}>
             Marque I — Fragrances d&apos;intérieur
           </p>
           <h1
@@ -50,7 +50,7 @@ export default async function MaisonVelynaPage() {
             Maison <span className="italic">Velyná</span>
           </h1>
           <p
-            className="lead"
+            className="lead text-velyna-light"
             style={{ margin: "28px 0 0", maxWidth: "52ch", fontSize: "clamp(18px, 1.5vw, 21px)" }}
           >
             Une maison dédiée aux fragrances d&apos;intérieur et aux objets parfumés qui
@@ -70,7 +70,10 @@ export default async function MaisonVelynaPage() {
             className="max-h-[58vh] w-full object-cover object-[50%_100%] md:max-h-[72vh]"
             style={{ height: "auto" }}
           />
-          <figcaption className="eyebrow" style={{ marginTop: 14, letterSpacing: "0.22em" }}>
+          <figcaption
+            className="eyebrow text-velyna-light/80"
+            style={{ marginTop: 14, letterSpacing: "0.22em" }}
+          >
             La collection complète — 250 ml
           </figcaption>
         </figure>
@@ -87,7 +90,7 @@ export default async function MaisonVelynaPage() {
         return (
           <section
             key={product.slug}
-            className="grid12 border-t border-line lg:min-h-[82vh]"
+            className="grid12 border-t border-velyna-light lg:min-h-[82vh]"
             style={{
               alignItems: "center",
               padding: "clamp(40px, 6vw, 88px) var(--gutter)",
@@ -118,7 +121,10 @@ export default async function MaisonVelynaPage() {
                   : "md:col-span-5 md:col-start-1 md:row-start-1 lg:col-span-4 lg:col-start-2"
               }
             >
-              <p className="eyebrow" style={{ marginBottom: 18, letterSpacing: "0.3em" }}>
+              <p
+                className="eyebrow text-velyna-soft"
+                style={{ marginBottom: 18, letterSpacing: "0.3em" }}
+              >
                 0{index + 1} — {product.capacity}
               </p>
               <h2
@@ -142,7 +148,7 @@ export default async function MaisonVelynaPage() {
                     fontStyle: "italic",
                     fontSize: "clamp(18px, 1.5vw, 22px)",
                     lineHeight: 1.5,
-                    color: "var(--muted)",
+                    color: "var(--velyna-soft)",
                   }}
                 >
                   {product.ambiance}
@@ -150,7 +156,7 @@ export default async function MaisonVelynaPage() {
               )}
 
               <dl
-                className="grid grid-cols-[62px_1fr] gap-x-5 gap-y-3 border-t border-line"
+                className="grid grid-cols-[62px_1fr] gap-x-5 gap-y-3 border-t border-velyna-light"
                 style={{
                   margin: "30px 0 0",
                   paddingTop: 22,
@@ -183,7 +189,10 @@ export default async function MaisonVelynaPage() {
                 >
                   {formatXOF(product.price)}
                 </span>
-                <Link href={`/produit/${product.slug}`} className="btn">
+                <Link
+                  href={`/produit/${product.slug}`}
+                  className="btn border-velyna text-velyna hover:bg-velyna hover:text-cream"
+                >
                   Voir la fiche
                 </Link>
               </div>
@@ -192,13 +201,13 @@ export default async function MaisonVelynaPage() {
         );
       })}
 
-      <section
-        className="section"
-        style={{ background: "var(--bg-soft)", borderTop: "1px solid rgba(201,180,154,0.5)" }}
-      >
+      <section className="section border-t border-velyna-light bg-velyna-light/35">
         <div className="grid12">
           <div className="md:col-span-4 md:col-start-1">
-            <p className="eyebrow" style={{ marginBottom: 20, letterSpacing: "0.3em" }}>
+            <p
+              className="eyebrow text-velyna-soft"
+              style={{ marginBottom: 20, letterSpacing: "0.3em" }}
+            >
               Le mode d&apos;emploi
             </p>
             <h2 className="h2" style={{ fontSize: "clamp(28px, 3vw, 46px)" }}>
@@ -212,8 +221,15 @@ export default async function MaisonVelynaPage() {
             style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}
           >
             {HOW_TO.map((step) => (
-              <div key={step.title} style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
-                <p className="eyebrow" style={{ marginBottom: 12, letterSpacing: "0.24em" }}>
+              <div
+                key={step.title}
+                className="border-t border-velyna-soft/40"
+                style={{ paddingTop: 22 }}
+              >
+                <p
+                  className="eyebrow text-velyna-soft"
+                  style={{ marginBottom: 12, letterSpacing: "0.24em" }}
+                >
                   {step.title}
                 </p>
                 <p style={{ margin: 0, fontSize: 17, lineHeight: 1.72, color: "var(--ink-3)" }}>
@@ -224,7 +240,7 @@ export default async function MaisonVelynaPage() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -236,7 +252,7 @@ const Note = ({ label, value }: { label: string; value: string | null }) =>
           fontSize: 9,
           letterSpacing: "0.24em",
           textTransform: "uppercase",
-          color: "var(--muted-3)",
+          color: "var(--velyna-soft)",
         }}
       >
         {label}
