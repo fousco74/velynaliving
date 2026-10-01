@@ -1,14 +1,7 @@
 import express, { type RequestHandler } from "express";
-import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { env } from "../config/env.js";
-import {
-  ACCEPTED_TYPES,
-  MAX_UPLOAD_BYTES,
-  UPLOAD_DIR,
-  safeFileName,
-  sniffImageType,
-} from "../lib/uploads.js";
+import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, safeFileName, sniffImageType } from "../lib/uploads.js";
+import { storage } from "../lib/storage.js";
 
 export const adminUploadsRouter = express.Router();
 
@@ -60,7 +53,7 @@ adminUploadsRouter.post("/uploads", parseImage, async (req, res) => {
     ACCEPTED_TYPES[type],
   );
 
-  await writeFile(join(UPLOAD_DIR, name), body);
+  await storage.save(name, body, type);
 
   // Le chemin renvoyé est celui qui sera stocké en base et validé par
   // `imagePathSchema` — jamais un chemin de disque.

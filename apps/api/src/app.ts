@@ -7,7 +7,7 @@ import { productRouter } from "./routes/product.js";
 import { orderRouter } from "./routes/order.js";
 import { journalRouter } from "./routes/journal.js";
 import { siteImageRouter } from "./routes/site-image.js";
-import { UPLOAD_DIR } from "./lib/uploads.js";
+import { storage } from "./lib/storage.js";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
 
@@ -38,20 +38,8 @@ export const createApp = () => {
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "100kb" }));
 
-  /**
-   * Images téléversées. Le nom porte un suffixe aléatoire, donc une URL
-   * désigne toujours le même octet : on peut la mettre en cache sans limite.
-   * `express.static` refuse les remontées de chemin (`../`).
-   */
-  app.use(
-    "/uploads",
-    express.static(UPLOAD_DIR, {
-      maxAge: "1y",
-      immutable: true,
-      index: false,
-      dotfiles: "ignore",
-    }),
-  );
+  /** Images téléversées : disque ou Vercel Blob selon UPLOAD_STORAGE (lib/storage.ts). */
+  app.use("/uploads", storage.serve);
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", currency: CURRENCY });

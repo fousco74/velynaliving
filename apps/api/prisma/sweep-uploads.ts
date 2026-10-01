@@ -1,6 +1,5 @@
-import { readdir, stat, unlink } from "node:fs/promises";
-import { join } from "node:path";
 import { disconnect, prisma } from "../src/db.js";
+import { storage } from "../src/lib/storage.js";
 import { UPLOAD_DIR } from "../src/lib/uploads.js";
 
 /**
@@ -51,31 +50,30 @@ const main = async () => {
   for (const article of articles) keep(article.imageUrl);
   for (const image of siteImages) keep(image.path);
 
-  const files = await readdir(UPLOAD_DIR).catch(() => [] as string[]);
+  const files = await storage.list();
 
   let kept = 0;
   let young = 0;
   const orphans: { name: string; bytes: number }[] = [];
 
-  for (const name of files) {
-    if (referenced.has(name)) {
+  for (const file of files) {
+    if (referenced.has(file.name)) {
       kept += 1;
       continue;
     }
 
-    const info = await stat(join(UPLOAD_DIR, name));
-    if (!info.isFile()) continue;
-
     // Déposé récemment : un formulaire est peut-être encore ouvert dessus.
-    if (info.mtimeMs > cutoff) {
+    if (file.uploadedAt.getTime() > cutoff) {
       young += 1;
       continue;
     }
 
-    orphans.push({ name, bytes: info.size });
+    orphans.push({ name: file.name, bytes: file.bytes });
   }
 
-  console.log(`Dossier          : ${UPLOAD_DIR}`);
+  console.log(
+    `Stockage         : ${storage.driver === "disk" ? UPLOAD_DIR : "Vercel Blob (uploads/)"}`,
+  );
   console.log(`Fichiers         : ${files.length}`);
   console.log(`Référencés       : ${kept}`);
   console.log(`Trop récents     : ${young} (moins de ${GRACE_HOURS} h, épargnés)`);
@@ -91,7 +89,7 @@ const main = async () => {
 
   for (const file of orphans) {
     console.log(`  ${apply ? "supprimé" : "à supprimer"}  ${file.name}`);
-    if (apply) await unlink(join(UPLOAD_DIR, file.name));
+    if (apply) await storage.remove(file.name);
   }
 
   if (!apply) {

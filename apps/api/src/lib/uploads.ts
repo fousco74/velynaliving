@@ -42,7 +42,9 @@ const refuserUploadDir = (raison: string): never => {
   process.exit(1);
 };
 
-if (env.NODE_ENV === "production") {
+// Le stockage blob n'a pas de dossier : ni garde, ni création. Sur Vercel, le
+// disque est en lecture seule, et `mkdirSync` y ferait planter le démarrage.
+if (env.UPLOAD_STORAGE === "disk" && env.NODE_ENV === "production") {
   if (!isAbsolute(env.UPLOAD_DIR)) {
     refuserUploadDir("le chemin est relatif, donc suspendu au répertoire de lancement");
   }
@@ -55,9 +57,15 @@ if (env.NODE_ENV === "production") {
   }
 }
 
-mkdirSync(UPLOAD_DIR, { recursive: true });
+if (env.UPLOAD_STORAGE === "disk") mkdirSync(UPLOAD_DIR, { recursive: true });
 
 export const MAX_UPLOAD_BYTES = env.UPLOAD_MAX_MB * 1024 * 1024;
+
+/**
+ * Noms produits par `safeFileName`. Toute lecture ou suppression par nom passe
+ * par ce filtre : un seul segment, sans remontée de chemin possible.
+ */
+export const SAFE_UPLOAD_NAME = /^[a-z0-9-]+\.(jpeg|png|webp|avif)$/;
 
 /** Types acceptés, et l'extension qu'on leur donne sur le disque. */
 export const ACCEPTED_TYPES = {
