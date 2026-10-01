@@ -13,7 +13,8 @@
     "admin:create": "tsx prisma/create-admin.ts",
     "journal:seed": "tsx prisma/seed-journal.ts",
     "uploads:sweep": "tsx prisma/sweep-uploads.ts",
-    "build": "prisma generate"
+    "build": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "type": "module",
   "dependencies": {
