@@ -14,6 +14,7 @@
     "journal:seed": "tsx prisma/seed-journal.ts",
     "uploads:sweep": "tsx prisma/sweep-uploads.ts",
     "build": "prisma generate",
+    "build:vercel": "prisma generate && prisma migrate deploy && node scripts/build-vercel.mjs",
     "postinstall": "prisma generate"
   },
   "type": "module",
@@ -34,6 +35,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^20.19.43",
     "@types/pg": "^8.23.1",
+    "esbuild": "0.28.2",
     "prisma": "7.10.0",
     "typescript": "^5.9.3"
   }

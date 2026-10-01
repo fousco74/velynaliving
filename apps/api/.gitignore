@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Dossier statique vide exigé par Vercel (scripts/build-vercel.mjs)
+public/
