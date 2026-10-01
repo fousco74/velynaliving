@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { build } from "esbuild";
 
 /**
@@ -38,6 +38,8 @@ await build({
   ],
 });
 
-// Vercel exige un dossier de sortie statique. On le veut VIDE : tout fichier
-// qui s'y trouverait passerait avant la réécriture vers la fonction.
+// Vercel exige un dossier de sortie statique, et NON VIDE. Tout fichier posé
+// ici passe avant la réécriture vers la fonction : on n'y met donc qu'un
+// robots.txt, chemin que l'API ne sert pas — et une API n'a rien à indexer.
 await mkdir("public", { recursive: true });
+await writeFile("public/robots.txt", "User-agent: *\nDisallow: /\n");
