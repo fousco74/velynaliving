@@ -28,9 +28,12 @@ const main = async () => {
   const apply = process.argv.includes("--apply");
   const cutoff = Date.now() - GRACE_HOURS * 3600 * 1000;
 
-  const [products, articles] = await Promise.all([
+  // Toute table qui stocke un chemin d'image doit figurer ici : un oubli fait
+  // passer ses images pour orphelines, et `--apply` les supprime.
+  const [products, articles, siteImages] = await Promise.all([
     prisma.product.findMany({ select: { img: true, imgDetail: true } }),
     prisma.journal.findMany({ select: { imageUrl: true } }),
+    prisma.siteImage.findMany({ select: { path: true } }),
   ]);
 
   // Seuls les chemins /uploads/ nous concernent : /assets/ est versionné.
@@ -46,6 +49,7 @@ const main = async () => {
   }
 
   for (const article of articles) keep(article.imageUrl);
+  for (const image of siteImages) keep(image.path);
 
   const files = await readdir(UPLOAD_DIR).catch(() => [] as string[]);
 
