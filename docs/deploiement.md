@@ -1,6 +1,7 @@
 # Déploiement — préproduction puis production
 
-Deux chemins sont supportés. Ils ne se mélangent pas : choisissez-en un.
+Trois chemins sont supportés. Ils ne se mélangent pas : choisissez-en un.
+Les deux premiers sont décrits ci-dessous, Vercel l'est au chemin C.
 
 |                  | **VPS + Docker**     | **Laravel Forge**          |
 | ---------------- | -------------------- | -------------------------- |
@@ -290,6 +291,69 @@ Au démarrage, l'API journalise le dossier d'images réellement utilisé —
 
 ---
 
+## Chemin C — Vercel (API en fonction serverless)
+
+Deux projets Vercel sur le même dépôt : le front (Root Directory `apps/web`) et
+l'API (Root Directory `apps/api`). Ce qui suit concerne l'API.
+
+**Ce qui change par rapport à A et B**, et pourquoi :
+
+- **L'API est bundlée.** `@vercel/node` ne transpile pas le TypeScript de
+  `node_modules`, or `@velyna/shared` en est (TypeScript brut, voulu pour Next).
+  `pnpm build:vercel` produit `dist/vercel/app.mjs` avec esbuild, `shared` et le
+  client Prisma inclus ; `api/index.js` le réexporte. Tout est déclaré dans
+  `apps/api/vercel.json` — rien à régler dans l'interface, hors Root Directory.
+- **Les images vont dans Vercel Blob**, pas sur disque : une fonction n'a aucun
+  disque persistant. Le chemin en base reste `/uploads/<nom>` ; l'API répond à
+  `GET /uploads/<nom>` par une redirection vers le blob, que le relais du front
+  suit. `UPLOAD_DIR` est ignoré.
+- **Les migrations se jouent au build** (`prisma migrate deploy` dans
+  `build:vercel`). `DATABASE_URL` doit donc être disponible à l'étape de build.
+
+### C1. Stockage et base
+
+- **Storage → Create → Blob**, puis le connecter au projet API : Vercel injecte
+  `BLOB_READ_WRITE_TOKEN`.
+- Une base Postgres accessible depuis Internet (Neon, Supabase…). Prendre l'URL
+  **poolée** : chaque instance de la fonction ouvre son propre pool.
+
+### C2. Variables d'environnement du projet API
+
+```bash
+DATABASE_URL=postgresql://…   # URL POOLÉE du fournisseur
+DATABASE_POOL_MAX=2           # par instance — 10 × N instances épuiserait la base
+CORS_ORIGIN=https://velynaliving.ci
+SESSION_SECRET=…              # openssl rand -base64 48
+SESSION_DOMAIN=velynaliving.ci
+TRUST_PROXY=1                 # le proxy de Vercel
+UPLOAD_STORAGE=blob           # sans le jeton Blob, l'API refuse de démarrer
+```
+
+`NODE_ENV=production` est posé par Vercel.
+
+### C3. Domaines
+
+La contrainte du § 0 vaut ici aussi : **`*.vercel.app` ne convient pas**,
+`velynaliving.vercel.app` et `velynaliving-api.vercel.app` sont deux domaines
+différents pour le navigateur. Rattacher `velynaliving.ci` au projet front et
+`api.velynaliving.ci` au projet API.
+
+Côté front, `NEXT_PUBLIC_API_URL` **et** `API_INTERNAL_URL` valent
+`https://api.velynaliving.ci` : il n'y a pas de réseau interne entre deux projets
+Vercel.
+
+### C4. Limites connues
+
+- **Le limiteur de tentatives de connexion est en mémoire**, donc compté par
+  instance : sous charge, plusieurs instances chaudes multiplient le quota.
+- **`uploads:sweep` se lance depuis un poste**, avec les variables du projet
+  (`vercel env pull`) : il n'y a pas de shell sur une fonction.
+- **Reprendre des images d'un disque** (passage de A/B à C) : les déposer une
+  fois dans le store sous `uploads/<même nom>`, sans suffixe aléatoire. Les
+  chemins en base restent valides tels quels.
+
+---
+
 ## Après le premier déploiement, dans les deux cas
 
 ```bash
@@ -315,7 +379,7 @@ développement (`velyna-test-2026`) ne doit jamais atteindre la production.
 ### Ménage des images orphelines
 
 Un fichier téléversé puis abandonné (formulaire fermé sans enregistrer) reste
-sur le disque. Le balayage ne touche ni `/assets/`, ni les fichiers référencés,
+dans le stockage (disque ou Vercel Blob, selon `UPLOAD_STORAGE`). Le balayage ne touche ni `/assets/`, ni les fichiers référencés (produits, journal, images du site),
 ni ceux de moins de 24 h — sans ce délai, il supprimerait l'image en cours
 d'insertion dans un formulaire encore ouvert.
 

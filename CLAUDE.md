@@ -13,6 +13,9 @@ Site e-commerce d'une maison de parfum (Abidjan, Côte d'Ivoire). Devise XOF (F 
 - **L'API tourne avec `tsx`, jamais compilée** — y compris en production, où `tsx` est donc une
   dépendance de production. `@velyna/shared` expose du TypeScript brut (`main: ./src/index.ts`),
   et c'est précisément ce qui permet à Next de le transpiler : le compiler casserait le front.
+  **Seule exception : Vercel**, qui ne transpile pas le TypeScript de `node_modules`. Là,
+  `pnpm build:vercel` bundle l'API avec esbuild (`shared` et le client Prisma inclus, vraies
+  dépendances externes) ; `shared` reste brut dans le dépôt.
 
 ## Commandes utiles
 
@@ -62,8 +65,9 @@ maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
   `journal:seed` pour le journal seul (idempotent dans les deux cas).
 
 **Déploiement prêt** : `docker-compose.prod.yml` (Postgres + migrations + API + front),
-Dockerfiles, et `docs/deploiement.md` qui couvre les deux cibles — VPS avec Docker, ou
-Laravel Forge (qui ne sait pas déployer un compose : chemin natif, daemons supervisés).
+Dockerfiles, et `docs/deploiement.md` qui couvre trois cibles — VPS avec Docker, Laravel Forge
+(qui ne sait pas déployer un compose : chemin natif, daemons supervisés), ou Vercel (API
+bundlée en fonction serverless, images dans Vercel Blob).
 
 **Images statiques administrables** (`/admin/images`) : hero de l'accueil, blocs des deux marques,
 vignettes du menu « Marques », pages marques, portraits de la fondatrice, logo, visuel 404.
@@ -86,7 +90,12 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   et sert aux rendus serveur (réseau interne).
 - Les images téléversées passent par le relais `/api/uploads/…` du front : URL relative, donc
   ni CORS, ni `remotePatterns`, ni dépendance au DNS public depuis le conteneur.
-- `UPLOAD_DIR` doit pointer vers un emplacement **persistant, absolu et hors du dossier de
+- Les octets des images passent par `storage` (`apps/api/src/lib/storage.ts`), jamais par `fs`
+  directement : pilote `disk` (UPLOAD_DIR) ou `blob` (Vercel Blob) selon `UPLOAD_STORAGE`. Le
+  chemin en base reste `/uploads/<nom>` dans les deux cas. Toute nouvelle colonne d'image doit
+  être ajoutée à `uploads:sweep`, sinon ses images passent pour orphelines et `--apply` les
+  supprime.
+- En pilote `disk`, `UPLOAD_DIR` doit pointer vers un emplacement **persistant, absolu et hors du dossier de
   déploiement**. Sans volume (Docker) ou dossier dédié (Forge), chaque redéploiement efface les
   images : sur un hébergement à releases atomiques, un chemin relatif suit le `cwd` du service,
   atterrit dans `releases/<id>/…` et meurt avec elle, pendant que la base continue de référencer
