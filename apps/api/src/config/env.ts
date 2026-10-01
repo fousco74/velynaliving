@@ -11,6 +11,12 @@ const schema = z.object({
   /** Durée de validité d'une session admin, en heures. */
   SESSION_HOURS: z.coerce.number().int().positive().max(720).default(12),
   /**
+   * Domaine du cookie de session (`velynaliving.com`). Absent, le cookie reste
+   * attaché au seul hôte de l'API — suffisant tant que seul le navigateur
+   * l'envoie à l'API. À renseigner si le front doit aussi le recevoir.
+   */
+  SESSION_DOMAIN: z.string().min(1).optional(),
+  /**
    * Répertoire des images téléversées depuis le back-office.
    *
    * Hors du dépôt et hors du build : ce sont des données, au même titre que la

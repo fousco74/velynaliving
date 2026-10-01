@@ -55,6 +55,7 @@ export const setSessionCookie = (res: Response, token: string) => {
     httpOnly: true,
     sameSite: "lax",
     secure: env.NODE_ENV === "production",
+    domain: env.SESSION_DOMAIN,
     maxAge: env.SESSION_HOURS * 3600 * 1000,
     path: "/",
   });
@@ -65,6 +66,8 @@ export const clearSessionCookie = (res: Response) => {
     httpOnly: true,
     sameSite: "lax",
     secure: env.NODE_ENV === "production",
+    // Même domaine qu'à la pose, sinon le navigateur garde l'ancien cookie.
+    domain: env.SESSION_DOMAIN,
     path: "/",
   });
 };
