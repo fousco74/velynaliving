@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d postgres",
     "db:seed": "tsx prisma/seed.ts",
@@ -13,7 +13,7 @@
     "admin:create": "tsx prisma/create-admin.ts",
     "journal:seed": "tsx prisma/seed-journal.ts",
     "uploads:sweep": "tsx prisma/sweep-uploads.ts",
-    "build": "prisma generate",
+    "build": "prisma generate && tsc",
     "build:vercel": "prisma generate && prisma migrate deploy && node scripts/build-vercel.mjs",
     "postinstall": "prisma generate"
   },
