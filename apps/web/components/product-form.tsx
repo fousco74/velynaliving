@@ -355,7 +355,7 @@ export const ProductForm = ({ product }: { product?: AdminProductFull }) => {
       </section>
 
       <section className="admin-panel">
-        <h2 className="admin-subtitle">Notes olfactives</h2>
+        <h2 className="admin-subtitle">Notes</h2>
         <div className="admin-grid">
           <div className="field">
             <label htmlFor="p-head">Note de tête</label>
