@@ -4,13 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useSyncExternalStore } from "react";
-import {
-  DELIVERY_OPTIONS,
-  formatXOF,
-  OPERATOR_LABELS,
-  type DeliveryMethod,
-  type Operator,
-} from "@velyna/shared";
+import { DELIVERY_OPTIONS, formatXOF, operatorLabel, type DeliveryMethod } from "@velyna/shared";
 import type { Order } from "@/lib/api";
 import { imageSrc } from "@/lib/api";
 
@@ -79,12 +73,7 @@ function ConfirmationContent() {
               />
               <Summary
                 label="Règlement"
-                value={
-                  order?.payment
-                    ? (OPERATOR_LABELS[order.payment.operator as Operator] ??
-                      order.payment.operator)
-                    : "—"
-                }
+                value={order?.payment ? operatorLabel(order.payment.operator) : "—"}
               />
             </div>
 

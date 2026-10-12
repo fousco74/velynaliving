@@ -2,10 +2,9 @@ import Image from "next/image";
 import {
   DELIVERY_OPTIONS,
   formatXOF,
-  OPERATOR_LABELS,
+  operatorLabel,
   ORDER_STATUS_LABELS,
   type DeliveryMethod,
-  type Operator,
   type OrderStatus,
 } from "@velyna/shared";
 import type { Order } from "@/lib/api";
@@ -110,8 +109,7 @@ export const OrderDetail = ({ order }: { order: Order }) => (
       </div>
       {order.payment && (
         <p className="eyebrow" style={{ marginTop: 10, letterSpacing: "0.18em" }}>
-          Règlement —{" "}
-          {OPERATOR_LABELS[order.payment.operator as Operator] ?? order.payment.operator}
+          Règlement — {operatorLabel(order.payment.operator)}
         </p>
       )}
     </aside>

@@ -34,6 +34,13 @@ export const OPERATOR_LABELS: Record<Operator, string> = {
   CASH_ON_DELIVERY: "Paiement à la livraison",
 };
 
+/**
+ * Le client ne choisit plus son moyen de paiement : `null` = la boutique le
+ * fixe avec lui au téléphone, puis l'admin le renseigne en encaissant.
+ */
+export const operatorLabel = (operator: string | null | undefined) =>
+  operator ? (OPERATOR_LABELS[operator as Operator] ?? operator) : "À convenir";
+
 export const ORDER_STATUSES = [
   "NEW",
   "PREPARING",
@@ -233,7 +240,8 @@ export const orderInputSchema = z
     municipality: z.enum(COMMUNES_ABIDJAN),
     instruction: z.string().trim().max(500).optional(),
     deliveryMethod: deliveryMethodSchema,
-    operator: operatorSchema,
+    /** Plus demandé au client ; accepté pour les anciens onglets encore ouverts. */
+    operator: operatorSchema.optional(),
     promoCode: z.string().trim().max(40).optional(),
   })
   .superRefine((order, ctx) => {
@@ -319,6 +327,8 @@ export const orderStatusUpdateSchema = z.object({
 
 export const paymentStatusUpdateSchema = z.object({
   status: z.enum(PAYMENT_STATUSES),
+  /** Moyen réellement utilisé, renseigné par l'admin. `null` = à convenir. */
+  operator: operatorSchema.nullable().optional(),
   reference: z.string().trim().max(120).optional(),
 });
 

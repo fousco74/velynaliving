@@ -9,10 +9,11 @@ import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TRANSITIONS,
   OPERATOR_LABELS,
+  OPERATORS,
   PAYMENT_STATUSES,
   PAYMENT_STATUS_LABELS,
   formatXOF,
-  type Operator,
+  operatorLabel,
   type OrderStatus,
 } from "@velyna/shared";
 import {
@@ -32,6 +33,9 @@ export default function AdminOrderPage() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [reference, setReference] = useState("");
+  // `undefined` tant que l'admin n'a pas touché au menu : on affiche alors la
+  // valeur enregistrée, sans la renvoyer.
+  const [operator, setOperator] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     getAdminOrder(number)
@@ -61,7 +65,13 @@ export default function AdminOrderPage() {
     setNotice("");
 
     try {
-      const payment = await updatePaymentStatus(number, next, reference.trim() || undefined);
+      const payment = await updatePaymentStatus(
+        number,
+        next,
+        reference.trim() || undefined,
+        operator === undefined ? undefined : operator || null,
+      );
+      setOperator(undefined);
       setOrder((current) => (current ? { ...current, payment } : current));
       setNotice(`Paiement marqué « ${PAYMENT_STATUS_LABELS[next]} ».`);
     } catch (err) {
@@ -171,8 +181,8 @@ export default function AdminOrderPage() {
           {order.payment ? (
             <>
               <dl className="admin-dl">
-                <dt>Opérateur</dt>
-                <dd>{OPERATOR_LABELS[order.payment.operator as Operator]}</dd>
+                <dt>Moyen de paiement</dt>
+                <dd>{operatorLabel(order.payment.operator)}</dd>
                 <dt>Montant</dt>
                 <dd>
                   <Money amount={order.payment.amount} />
@@ -190,6 +200,26 @@ export default function AdminOrderPage() {
               </dl>
 
               <div className="field" style={{ margin: "22px 0 16px" }}>
+                <label htmlFor="p-operator">Moyen de paiement utilisé</label>
+                <select
+                  id="p-operator"
+                  value={operator ?? order.payment.operator ?? ""}
+                  onChange={(event) => setOperator(event.target.value)}
+                >
+                  <option value="">À convenir</option>
+                  {OPERATORS.map((value) => (
+                    <option key={value} value={value}>
+                      {OPERATOR_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+                <p className="admin-hint">
+                  Le client ne le choisit plus en ligne : renseignez-le en enregistrant
+                  l&apos;encaissement.
+                </p>
+              </div>
+
+              <div className="field" style={{ margin: "0 0 16px" }}>
                 <label htmlFor="p-ref">Référence de transaction</label>
                 <input
                   id="p-ref"

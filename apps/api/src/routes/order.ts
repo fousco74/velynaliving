@@ -186,7 +186,7 @@ orderRouter.post("/", async (req, res) => {
             total: totals.total,
             items: { create: lines },
             payment: {
-              create: { operator: input.operator, amount: totals.total },
+              create: { operator: input.operator ?? null, amount: totals.total },
             },
           },
           select: ORDER_VIEW,

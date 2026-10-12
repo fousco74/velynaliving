@@ -58,7 +58,9 @@ Site public complet + **back-office admin terminé** : auth, commandes (statuts,
 maisons, produits, stock, tableau de bord, journal. Tout en CRUD.
 
 - Commande **en invité** — pas de compte client. `User` = comptes admin uniquement.
-- **Aucune intégration de paiement** : l'étape 3 enregistre l'opérateur choisi, `Payment.status = PENDING`.
+- **Aucune intégration de paiement** : le tunnel n'a que 2 étapes, le client ne choisit pas de moyen
+  de paiement (`Payment.operator = null`, affiché « À convenir » via `operatorLabel`). L'admin le
+  renseigne sur la fiche commande en enregistrant l'encaissement. `Payment.status = PENDING`.
 - Journal **en base** et administrable. Corps d'article en texte : ligne vide = nouveau bloc,
   `## ` = intertitre, `> ` = citation (`parseArticleBody` dans `packages/shared`).
   Reprise du contenu : incluse dans `pnpm --filter @velyna/api db:seed`, ou

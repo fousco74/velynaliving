@@ -83,7 +83,7 @@ export type Order = {
   deliveryCost: number;
   total: number;
   items: OrderItem[];
-  payment: { operator: string; status: string; amount: number } | null;
+  payment: { operator: string | null; status: string; amount: number } | null;
 };
 
 export type ApiIssue = { path: (string | number)[]; message: string };
@@ -177,7 +177,7 @@ export type OrderRow = {
   municipality: string;
   deliveryMethod: Order["deliveryMethod"];
   total: number;
-  payment: { operator: string; status: PaymentStatusValue } | null;
+  payment: { operator: string | null; status: PaymentStatusValue } | null;
   _count: { items: number };
 };
 
@@ -190,7 +190,7 @@ export type AdminOrder = Omit<Order, "status" | "payment"> & {
   status: OrderStatusValue;
   updatedAt: string;
   payment: {
-    operator: string;
+    operator: string | null;
     status: PaymentStatusValue;
     amount: number;
     reference: string | null;
@@ -265,10 +265,16 @@ export const updatePaymentStatus = (
   number: string,
   status: PaymentStatusValue,
   reference?: string,
+  /** `undefined` = ne pas toucher ; `null` = remettre « à convenir ». */
+  operator?: string | null,
 ) =>
   request<AdminOrder["payment"]>(`/admin/orders/${encodeURIComponent(number)}/payment`, {
     method: "PATCH",
-    body: JSON.stringify({ status, ...(reference && { reference }) }),
+    body: JSON.stringify({
+      status,
+      ...(reference && { reference }),
+      ...(operator !== undefined && { operator }),
+    }),
   });
 
 export const getAdminProducts = (params?: {

@@ -260,7 +260,11 @@ adminRouter.patch("/orders/:number/payment", async (req, res) => {
   // V1 : aucun opérateur n'est branché, l'admin confirme l'encaissement à la main.
   const payment = await prisma.payment.update({
     where: { id: order.payment.id },
-    data: { status: parsed.data.status, reference: parsed.data.reference ?? null },
+    data: {
+      status: parsed.data.status,
+      reference: parsed.data.reference ?? null,
+      ...(parsed.data.operator !== undefined && { operator: parsed.data.operator }),
+    },
     select: { operator: true, status: true, amount: true, reference: true },
   });
 

@@ -268,12 +268,13 @@ model OrderProduct {
   @@map("order_product")
 }
 
-// V1 : enregistre l'intention de règlement choisie à l'étape 3 du tunnel.
-// Aucune intégration opérateur — prévu pour une évolution future.
+// V1 : aucune intégration opérateur. Le client ne choisit plus de moyen de
+// paiement : la boutique le rappelle, puis l'admin renseigne le moyen réel en
+// encaissant. operator = null signifie « à convenir ».
 model Payment {
   id        Int           @id @default(autoincrement())
   orderId   Int           @unique @map("order_id")
-  operator  Operator
+  operator  Operator?
   status    PaymentStatus @default(PENDING)
   amount    Int
   reference String? // référence transaction, remplie en V2

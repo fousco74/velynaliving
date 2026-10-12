@@ -12,15 +12,14 @@ import {
   formatXOF,
   FREE_DELIVERY_THRESHOLD,
   normalizePhoneCI,
-  OPERATOR_LABELS,
-  OPERATORS,
   type DeliveryMethod,
-  type Operator,
 } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
 import { ApiError, checkPromo, createOrder, imageSrc, type CheckedPromo } from "@/lib/api";
 
-const STEPS = ["Coordonnées", "Livraison", "Règlement"];
+// Pas d'étape « Règlement » : aucun paiement n'est intégré, la boutique
+// convient du moyen avec le client après la commande.
+const STEPS = ["Coordonnées", "Livraison"];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -53,7 +52,6 @@ function CommandeContent() {
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [delivery, setDelivery] = useState<DeliveryMethod>("ABIDJAN");
-  const [operator, setOperator] = useState<Operator>("WAVE");
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -130,7 +128,6 @@ function CommandeContent() {
         municipality: form.municipality,
         instruction: form.instruction.trim() || undefined,
         deliveryMethod: delivery,
-        operator,
         promoCode: promo?.code,
       });
 
@@ -180,7 +177,7 @@ function CommandeContent() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: `repeat(${STEPS.length}, 1fr)`,
             gap: "clamp(12px, 2vw, 32px)",
             marginBottom: "clamp(32px, 4vw, 60px)",
           }}
@@ -320,36 +317,9 @@ function CommandeContent() {
                 <p className="eyebrow" style={{ marginTop: 16, letterSpacing: "0.18em" }}>
                   Livraison offerte dès {formatXOF(FREE_DELIVERY_THRESHOLD)}
                 </p>
-              </>
-            )}
-
-            {step === 2 && (
-              <>
-                <h2 className="h3" style={{ marginBottom: 28 }}>
-                  Règlement
-                </h2>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: 12,
-                  }}
-                >
-                  {OPERATORS.map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      className="choice"
-                      data-selected={operator === key}
-                      onClick={() => setOperator(key)}
-                    >
-                      <span className="choice-name">{OPERATOR_LABELS[key]}</span>
-                    </button>
-                  ))}
-                </div>
                 <p className="lead" style={{ margin: "24px 0 0", maxWidth: "56ch" }}>
                   Aucun montant n&apos;est débité en ligne. Nous vous contactons après validation
-                  pour finaliser le règlement par le moyen choisi.
+                  pour convenir du règlement.
                 </p>
                 {serverError && (
                   <p className="field-error" style={{ fontSize: 17 }}>
@@ -378,13 +348,13 @@ function CommandeContent() {
                   Étape précédente
                 </button>
               )}
-              {step < 2 ? (
+              {step < STEPS.length - 1 ? (
                 <button
                   type="button"
                   className="btn btn-solid"
                   onClick={() => validateStep() && setStep((s) => s + 1)}
                 >
-                  {step === 0 ? "Continuer vers la livraison" : "Continuer vers le règlement"}
+                  Continuer vers la livraison
                 </button>
               ) : (
                 <button
@@ -470,9 +440,6 @@ function CommandeContent() {
               <span>Total</span>
               <span>{formatXOF(totals.total)}</span>
             </div>
-            <p className="eyebrow" style={{ marginTop: 8, letterSpacing: "0.18em" }}>
-              Règlement — {OPERATOR_LABELS[operator]}
-            </p>
           </aside>
         </div>
       </section>
