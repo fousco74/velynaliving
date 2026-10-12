@@ -52,6 +52,14 @@ export default function AdminDashboard() {
           <p className="admin-kpi-note">À confirmer à la main (V1 sans opérateur)</p>
         </article>
 
+        <Link href="/admin/avis" className="admin-kpi" data-alert={stats.pendingReviews > 0}>
+          <p className="tag">Avis à modérer</p>
+          <p className="admin-kpi-value">{stats.pendingReviews}</p>
+          <p className="admin-kpi-note">
+            Invisibles sur le site tant qu&apos;ils ne sont pas publiés
+          </p>
+        </Link>
+
         <article className="admin-kpi" data-alert={alerts > 0}>
           <p className="tag">Alertes stock</p>
           <p className="admin-kpi-value">{alerts}</p>

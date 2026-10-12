@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
-import { imageSrc, ApiError, getProduct } from "@/lib/api";
+import { formatRating, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
+import { imageSrc, ApiError, getProduct, getProductReviews, type ReviewPage } from "@/lib/api";
 import { AddToCart } from "@/components/add-to-cart";
+import { Reviews } from "@/components/reviews";
+import { Stars } from "@/components/stars";
 
 const load = async (slug: string) => {
   try {
@@ -23,9 +25,23 @@ export async function generateMetadata({
   return { title: product.name, description: product.ambiance ?? undefined };
 }
 
+/** Les avis ne doivent jamais faire tomber la fiche : sans eux, la section reste vide. */
+const loadReviews = async (slug: string): Promise<ReviewPage> => {
+  try {
+    return await getProductReviews(slug);
+  } catch {
+    return {
+      summary: { average: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+      reviews: [],
+      page: 1,
+      pages: 1,
+    };
+  }
+};
+
 export default async function ProductPage({ params }: PageProps<"/produit/[slug]">) {
   const { slug } = await params;
-  const product = await load(slug);
+  const [product, reviews] = await Promise.all([load(slug), loadReviews(slug)]);
 
   const soldOut = product.stock <= 0;
   const isKai = product.house.slug === "velyna-kai";
@@ -80,6 +96,18 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
           >
             {product.name}
           </h1>
+
+          {product.rating.count > 0 && (
+            <a
+              href="#avis"
+              className="mt-4 inline-flex items-center gap-2.5 font-sans text-[11px] font-light tracking-[0.14em] text-muted-2"
+            >
+              <Stars value={product.rating.average} />
+              <span>
+                {formatRating(product.rating.average)} · {product.rating.count} avis
+              </span>
+            </a>
+          )}
 
           {product.ambiance && (
             <p
@@ -182,6 +210,46 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
             </p>
           </div>
         </section>
+      )}
+
+      <Reviews slug={product.slug} productName={product.name} initial={reviews} />
+
+      {product.rating.count > 0 && (
+        <script
+          type="application/ld+json"
+          // Données structurées : étoiles dans les résultats de recherche.
+          // `<` échappé pour qu'un avis ne puisse pas fermer la balise script.
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: product.name,
+              sku: product.ref,
+              brand: { "@type": "Brand", name: product.house.name },
+              offers: {
+                "@type": "Offer",
+                price: product.price,
+                priceCurrency: "XOF",
+                availability: `https://schema.org/${product.stock > 0 ? "InStock" : "OutOfStock"}`,
+              },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: product.rating.average,
+                reviewCount: product.rating.count,
+                bestRating: 5,
+                worstRating: 1,
+              },
+              review: reviews.reviews.slice(0, 5).map((review) => ({
+                "@type": "Review",
+                author: { "@type": "Person", name: review.author },
+                datePublished: review.date.slice(0, 10),
+                reviewRating: { "@type": "Rating", ratingValue: review.rating, bestRating: 5 },
+                ...(review.title && { name: review.title }),
+                reviewBody: review.body,
+              })),
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
       )}
     </>
   );

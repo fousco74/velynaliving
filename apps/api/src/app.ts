@@ -8,6 +8,7 @@ import { orderRouter } from "./routes/order.js";
 import { journalRouter } from "./routes/journal.js";
 import { siteImageRouter } from "./routes/site-image.js";
 import { promoCodeRouter } from "./routes/promo-code.js";
+import { reviewRouter } from "./routes/review.js";
 import { storage } from "./lib/storage.js";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
@@ -49,6 +50,8 @@ export const createApp = () => {
   app.use("/auth", authRouter);
   app.use("/admin", adminRouter);
   app.use("/houses", houseRouter);
+  // Avant /products : chemin plus spécifique.
+  app.use("/products/:slug/reviews", reviewRouter);
   app.use("/products", productRouter);
   app.use("/orders", orderRouter);
   app.use("/journal", journalRouter);

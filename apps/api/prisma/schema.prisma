@@ -64,6 +64,12 @@ enum PaymentStatus {
   FAILED
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // Nature de la remise d'un code promo, choisie à la création.
 enum PromoType {
   PERCENT // value = pourcentage (1 à 100) du sous-total
@@ -153,6 +159,7 @@ model Product {
 
   house      House          @relation(fields: [houseId], references: [id])
   orderItems OrderProduct[]
+  reviews    Review[]
 
   @@index([houseId])
   @@index([status])
@@ -215,6 +222,7 @@ model Order {
   promo    PromoCode?     @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
   items    OrderProduct[]
   payment  Payment?
+  reviews  Review[]
 
   @@index([customerId])
   @@index([promoCodeId])
@@ -284,6 +292,39 @@ model Payment {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("payment")
+}
+
+// Avis client, déposé depuis la fiche produit. Ouvert à tous, publié
+// seulement après validation admin. `verified` n'est vrai que si le client a
+// prouvé son achat (numéro de commande + e-mail d'une commande contenant le
+// produit). L'e-mail ne sort jamais de l'API publique.
+model Review {
+  id          Int          @id @default(autoincrement())
+  productId   Int          @map("product_id")
+  firstName   String       @map("first_name")
+  lastName    String       @map("last_name") // seule l'initiale est affichée
+  email       String
+  rating      Int // 1 à 5
+  title       String?
+  body        String
+  verified    Boolean      @default(false)
+  orderId     Int?         @map("order_id")
+  status      ReviewStatus @default(PENDING)
+  reply       String? // réponse de la maison, publiée sous l'avis
+  repliedAt   DateTime?    @map("replied_at")
+  publishedAt DateTime?    @map("published_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Un seul avis vérifié par produit et par commande. Les avis non vérifiés
+  // (orderId null) ne sont pas concernés : Postgres tient les NULL pour distincts.
+  @@unique([orderId, productId])
+  @@index([productId, status])
+  @@index([status])
+  @@map("review")
 }
 
 // Remplacements des visuels livrés avec le site (hero, blocs marques, menu…).

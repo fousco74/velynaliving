@@ -13,6 +13,7 @@ import { requireAdmin } from "../middleware/auth.js";
 import { adminCatalogRouter } from "./admin-catalog.js";
 import { adminJournalRouter } from "./admin-journal.js";
 import { adminPromoCodesRouter } from "./admin-promo-codes.js";
+import { adminReviewsRouter } from "./admin-reviews.js";
 import { adminSiteImagesRouter } from "./admin-site-images.js";
 import { adminUploadsRouter } from "./admin-uploads.js";
 
@@ -25,6 +26,7 @@ adminRouter.use(requireAdmin);
 adminRouter.use(adminCatalogRouter);
 adminRouter.use(adminJournalRouter);
 adminRouter.use(adminPromoCodesRouter);
+adminRouter.use(adminReviewsRouter);
 adminRouter.use(adminSiteImagesRouter);
 adminRouter.use(adminUploadsRouter);
 
@@ -88,21 +90,23 @@ const PRODUCT_ROW = {
 // ─────────────────────────── Tableau de bord ───────────────────────────
 
 adminRouter.get("/stats", async (_req, res) => {
-  const [byStatus, revenue, lowStock, outOfStock, pendingPayments, recent] = await Promise.all([
-    prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
-    // Le chiffre d'affaires exclut annulées et remboursées : ce sont des
-    // commandes enregistrées, pas des ventes.
-    prisma.order.aggregate({
-      _sum: { total: true },
-      where: { status: { notIn: [...RESTOCKING_STATUSES] } },
-    }),
-    prisma.product.count({
-      where: { status: "ONLINE", stock: { gt: 0, lte: LOW_STOCK_THRESHOLD } },
-    }),
-    prisma.product.count({ where: { status: "ONLINE", stock: 0 } }),
-    prisma.payment.count({ where: { status: "PENDING" } }),
-    prisma.order.findMany({ select: ORDER_ROW, orderBy: { createdAt: "desc" }, take: 6 }),
-  ]);
+  const [byStatus, revenue, lowStock, outOfStock, pendingPayments, recent, pendingReviews] =
+    await Promise.all([
+      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
+      // Le chiffre d'affaires exclut annulées et remboursées : ce sont des
+      // commandes enregistrées, pas des ventes.
+      prisma.order.aggregate({
+        _sum: { total: true },
+        where: { status: { notIn: [...RESTOCKING_STATUSES] } },
+      }),
+      prisma.product.count({
+        where: { status: "ONLINE", stock: { gt: 0, lte: LOW_STOCK_THRESHOLD } },
+      }),
+      prisma.product.count({ where: { status: "ONLINE", stock: 0 } }),
+      prisma.payment.count({ where: { status: "PENDING" } }),
+      prisma.order.findMany({ select: ORDER_ROW, orderBy: { createdAt: "desc" }, take: 6 }),
+      prisma.review.count({ where: { status: "PENDING" } }),
+    ]);
 
   const counts = Object.fromEntries(byStatus.map((row) => [row.status, row._count._all]));
 
@@ -116,6 +120,7 @@ adminRouter.get("/stats", async (_req, res) => {
       lowStock,
       outOfStock,
       pendingPayments,
+      pendingReviews,
       recent,
       lowStockThreshold: LOW_STOCK_THRESHOLD,
     },

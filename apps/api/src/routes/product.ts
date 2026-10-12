@@ -1,6 +1,7 @@
 import express from "express";
 import { productQuerySchema } from "@velyna/shared";
 import { prisma } from "../db.js";
+import { publishedSummary } from "./review.js";
 
 export const productRouter = express.Router();
 
@@ -60,6 +61,7 @@ productRouter.get("/:slug", async (req, res) => {
       detailBackground: true,
       inkColor: true,
       usage: true,
+      id: true,
     },
   });
 
@@ -67,5 +69,9 @@ productRouter.get("/:slug", async (req, res) => {
     return res.status(404).json({ error: "Produit introuvable." });
   }
 
-  res.json({ data: product });
+  // Moyenne et nombre d'avis publiés, pour les étoiles sous le titre.
+  const { id, ...rest } = product;
+  const { average, count } = await publishedSummary(id);
+
+  res.json({ data: { ...rest, rating: { average, count } } });
 });

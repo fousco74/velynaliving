@@ -79,6 +79,9 @@ vignettes du menu « Marques », pages marques, portraits de la fondatrice, logo
 optionnelles (nombre total, une fois par e-mail, minimum d'achat). VELYNA10 n'est plus une
 constante : la migration `promo_code` l'a inséré en base.
 
+**Avis clients** (`/admin/avis`) : dépôt ouvert à tous depuis la fiche produit, publication
+après modération, réponse de la maison, badge « Achat vérifié », JSON-LD `AggregateRating`.
+
 Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 
 ## Règles non négociables
@@ -118,7 +121,11 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   En local : `DATABASE_URL=postgres://velyna:velyna_dev@localhost:5434/velyna`.
 - Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
   publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
-  (compteur de vues) et `POST /auth/login|logout`.
+  (compteur de vues), `POST /products/:slug/reviews` (avis, limité à 5/h/IP, champ piège,
+  publié seulement après modération) et `POST /auth/login|logout`.
+- Un avis ne renvoie **jamais** l'e-mail ni le nom complet côté public (liste blanche dans
+  `routes/review.ts`, affichage « Prénom I. » via `displayAuthor`). Le badge « Achat vérifié »
+  exige numéro de commande + e-mail d'une commande non annulée contenant le produit.
 - Les images du back-office se téléversent (`POST /admin/uploads`, corps brut, pas de multipart).
   Elles sont écrites dans `UPLOAD_DIR` côté API et servies sur `/uploads/…` — **jamais** dans
   `apps/web/public/`, qui est du build et repart à zéro à chaque déploiement. Prévoir un volume

@@ -827,3 +827,87 @@ export const promoState = (promo: PromoWindow, now = new Date()): PromoState => 
   if (promo.startsAt && new Date(promo.startsAt) > now) return "SCHEDULED";
   return "ACTIVE";
 };
+
+// ─────────────────────────── Avis clients ───────────────────────────
+
+export const REVIEW_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  PENDING: "En attente",
+  APPROVED: "Publié",
+  REJECTED: "Refusé",
+};
+
+export const REVIEW_BODY_MIN = 20;
+export const REVIEW_BODY_MAX = 2000;
+export const REVIEWS_PER_PAGE = 10;
+
+export const reviewInputSchema = z.object({
+  firstName: z.string().trim().min(1, "Prénom requis").max(40),
+  lastName: z.string().trim().min(1, "Nom requis").max(60),
+  email: z.email("Adresse e-mail invalide"),
+  rating: z.number().int().min(1, "Choisissez une note").max(5),
+  title: z.string().trim().max(80).optional(),
+  body: z
+    .string()
+    .trim()
+    .min(REVIEW_BODY_MIN, `Quelques mots de plus : ${REVIEW_BODY_MIN} caractères minimum`)
+    .max(REVIEW_BODY_MAX),
+  /** Facultatif : prouve l'achat et vaut le badge « Achat vérifié ». */
+  orderNumber: z.string().trim().max(30).optional(),
+  /** Champ piège, invisible pour un humain : rempli, c'est un robot. */
+  website: z.string().optional(),
+});
+
+/** PATCH de modération : redéclaré, jamais `.partial()`. `reply: ""` retire la réponse. */
+export const reviewModerationSchema = z
+  .object({
+    status: z.enum(REVIEW_STATUSES).optional(),
+    reply: z.string().trim().max(1000).optional(),
+  })
+  .refine((patch) => Object.keys(patch).length > 0, "Aucune modification demandée.");
+
+export const adminReviewQuerySchema = z.object({
+  status: z.enum(REVIEW_STATUSES).optional(),
+});
+
+export const reviewPageQuerySchema = z.object({
+  page: z.coerce.number().int().positive().max(1000).default(1),
+});
+
+export type ReviewInput = z.infer<typeof reviewInputSchema>;
+export type ReviewModeration = z.infer<typeof reviewModerationSchema>;
+
+/** « Awa K. » : le nom complet d'un client n'a rien à faire sur une page publique. */
+export const displayAuthor = (firstName: string, lastName: string) =>
+  `${firstName.trim()} ${lastName.trim().charAt(0).toUpperCase()}.`;
+
+export type RatingSummary = {
+  average: number;
+  count: number;
+  /** Nombre d'avis par note, de 1 à 5. */
+  distribution: Record<1 | 2 | 3 | 4 | 5, number>;
+};
+
+/** Agrège des notes déjà comptées par valeur (sortie d'un `groupBy`). */
+export const ratingSummary = (
+  rows: readonly { rating: number; count: number }[],
+): RatingSummary => {
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let count = 0;
+  let sum = 0;
+
+  for (const { rating, count: n } of rows) {
+    if (rating < 1 || rating > 5) continue;
+    distribution[rating as 1 | 2 | 3 | 4 | 5] += n;
+    count += n;
+    sum += rating * n;
+  }
+
+  // Une décimale : « 4,7 », jamais « 4,666… ».
+  return { average: count ? Math.round((sum / count) * 10) / 10 : 0, count, distribution };
+};
+
+/** « 4,7 » — virgule française. */
+export const formatRating = (value: number) => value.toFixed(1).replace(".", ",");

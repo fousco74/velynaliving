@@ -8,6 +8,10 @@ const SECTIONS: { heading: string; text: string }[] = [
     text: "Lors d'une commande, nous collectons vos nom, prénom, adresse e-mail, numéro de téléphone, adresse de livraison et commune. Ces données sont strictement nécessaires au traitement de votre commande.",
   },
   {
+    heading: "Avis clients",
+    text: "Pour publier un avis, nous demandons votre prénom, votre nom et votre adresse e-mail. Seuls votre prénom et l'initiale de votre nom sont affichés. L'e-mail n'est jamais publié : il sert à vérifier un achat lorsque vous indiquez un numéro de commande, et à vous recontacter au sujet de votre avis. Vous pouvez demander la suppression de votre avis à tout moment.",
+  },
+  {
     heading: "Finalités",
     text: "Vos données servent à préparer et livrer votre commande, vous contacter pour le règlement, et répondre à vos demandes. Elles ne sont jamais revendues.",
   },

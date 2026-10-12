@@ -3,6 +3,9 @@ import {
   type PromoCodeInput,
   type PromoCodeUpdate,
   type PromoRule,
+  type RatingSummary,
+  type ReviewInput,
+  type ReviewStatus,
   type SiteImageKey,
   type SiteImages,
 } from "@velyna/shared";
@@ -55,6 +58,8 @@ export type Product = ProductEditorial & {
   detailBackground: string | null;
   inkColor: string | null;
   usage: string | null;
+  /** Avis publiés uniquement. */
+  rating: { average: number; count: number };
 };
 
 export type OrderItem = {
@@ -143,6 +148,65 @@ export const getProductsDetailed = (params?: { house?: string; sort?: string }) 
 
 export const getProduct = (slug: string) => request<Product>(`/products/${slug}`);
 
+// ─────────────────────── Avis clients ───────────────────────
+
+export type PublicReview = {
+  id: number;
+  author: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  verified: boolean;
+  reply: string | null;
+  repliedAt: string | null;
+  date: string;
+};
+
+export type ReviewPage = {
+  summary: RatingSummary;
+  reviews: PublicReview[];
+  page: number;
+  pages: number;
+};
+
+export const getProductReviews = (slug: string, page = 1) =>
+  request<ReviewPage>(`/products/${encodeURIComponent(slug)}/reviews?page=${page}`);
+
+export const submitReview = (slug: string, body: ReviewInput) =>
+  request<{ status: "PENDING" }>(`/products/${encodeURIComponent(slug)}/reviews`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+export type AdminReview = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  verified: boolean;
+  status: ReviewStatus;
+  reply: string | null;
+  repliedAt: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  product: { slug: string; name: string };
+  order: { number: string } | null;
+};
+
+export const getAdminReviews = (status?: ReviewStatus) =>
+  request<{ reviews: AdminReview[]; counts: Partial<Record<ReviewStatus, number>> }>(
+    `/admin/reviews${status ? `?status=${status}` : ""}`,
+  );
+
+export const moderateReview = (id: number, patch: { status?: ReviewStatus; reply?: string }) =>
+  request<AdminReview>(`/admin/reviews/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
+
+export const deleteReview = (id: number) =>
+  request<null>(`/admin/reviews/${id}`, { method: "DELETE" });
+
 export const getHouses = () => request<House[]>("/houses");
 
 export const createOrder = (body: unknown) =>
@@ -215,6 +279,7 @@ export type AdminStats = {
   lowStock: number;
   outOfStock: number;
   pendingPayments: number;
+  pendingReviews: number;
   recent: OrderRow[];
   lowStockThreshold: number;
 };
