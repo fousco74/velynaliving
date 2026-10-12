@@ -12,6 +12,7 @@ import { prisma } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { adminCatalogRouter } from "./admin-catalog.js";
 import { adminJournalRouter } from "./admin-journal.js";
+import { adminPromoCodesRouter } from "./admin-promo-codes.js";
 import { adminSiteImagesRouter } from "./admin-site-images.js";
 import { adminUploadsRouter } from "./admin-uploads.js";
 
@@ -23,6 +24,7 @@ adminRouter.use(requireAdmin);
 // CRUD du catalogue (maisons, produits) et du journal — sous la même garde.
 adminRouter.use(adminCatalogRouter);
 adminRouter.use(adminJournalRouter);
+adminRouter.use(adminPromoCodesRouter);
 adminRouter.use(adminSiteImagesRouter);
 adminRouter.use(adminUploadsRouter);
 
@@ -181,7 +183,12 @@ adminRouter.patch("/orders/:number", async (req, res) => {
 
   const current = await prisma.order.findUnique({
     where: { number: req.params.number },
-    select: { id: true, status: true, items: { select: { productId: true, quantity: true } } },
+    select: {
+      id: true,
+      status: true,
+      promoCodeId: true,
+      items: { select: { productId: true, quantity: true } },
+    },
   });
 
   if (!current) {
@@ -211,6 +218,15 @@ adminRouter.patch("/orders/:number", async (req, res) => {
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { increment: item.quantity } },
+        });
+      }
+
+      // Le code promo est rendu avec le stock : une commande annulée ne doit
+      // pas consommer une des N utilisations d'une offre limitée.
+      if (current.promoCodeId !== null) {
+        await tx.promoCode.updateMany({
+          where: { id: current.promoCodeId, usedCount: { gt: 0 } },
+          data: { usedCount: { decrement: 1 } },
         });
       }
     }

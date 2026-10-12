@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   COMMUNES_ABIDJAN,
   computeTotals,
   DELIVERY_OPTIONS,
+  describePromo,
   formatXOF,
   FREE_DELIVERY_THRESHOLD,
   OPERATOR_LABELS,
@@ -16,7 +17,7 @@ import {
   type Operator,
 } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
-import { imageSrc, createOrder } from "@/lib/api";
+import { ApiError, checkPromo, createOrder, imageSrc, type CheckedPromo } from "@/lib/api";
 
 const STEPS = ["Coordonnées", "Livraison", "Règlement"];
 
@@ -56,7 +57,29 @@ function CommandeContent() {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  const promo = params.get("promo");
+  // Le code arrive du panier par l'URL ; on revérifie sa règle auprès de
+  // l'API plutôt que de la faire transiter : une URL se modifie à la main.
+  const promoCode = params.get("promo");
+  const [promo, setPromo] = useState<CheckedPromo | null>(null);
+  const [promoError, setPromoError] = useState("");
+
+  useEffect(() => {
+    if (!promoCode) return;
+    let cancelled = false;
+
+    checkPromo(promoCode)
+      .then((rule) => !cancelled && setPromo(rule))
+      .catch((err) => {
+        if (!cancelled) {
+          setPromoError(err instanceof ApiError ? err.message : "Code promo non vérifié.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [promoCode]);
+
   const totals = computeTotals(
     lines.map((line) => ({ unitPrice: line.price, quantity: line.quantity })),
     delivery,
@@ -106,7 +129,7 @@ function CommandeContent() {
         instruction: form.instruction.trim() || undefined,
         deliveryMethod: delivery,
         operator,
-        promoCode: promo ?? undefined,
+        promoCode: promo?.code,
       });
 
       // On vide le panier seulement après la confirmation du serveur.
@@ -114,7 +137,14 @@ function CommandeContent() {
       sessionStorage.setItem("velyna.lastOrder", JSON.stringify(order));
       router.push(`/confirmation?number=${order.number}`);
     } catch (error) {
-      setServerError(error instanceof Error ? error.message : "Une erreur est survenue.");
+      // Code refusé au dernier moment (épuisé, déjà utilisé…) : on le retire
+      // pour que le récapitulatif montre le vrai total avant de renvoyer.
+      if (error instanceof ApiError && error.field === "promoCode") {
+        setPromo(null);
+        setPromoError(`${error.message} Votre commande peut être passée sans ce code.`);
+      } else {
+        setServerError(error instanceof Error ? error.message : "Une erreur est survenue.");
+      }
       setSubmitting(false);
     }
   };
@@ -414,10 +444,17 @@ function CommandeContent() {
             </div>
             {totals.discount > 0 && (
               <div className="summary-row">
-                <span>Code {promo}</span>
+                <span>Code {promo?.code}</span>
                 <span>−{formatXOF(totals.discount)}</span>
               </div>
             )}
+            {promo?.type === "FREE_DELIVERY" && (
+              <div className="summary-row">
+                <span>Code {promo.code}</span>
+                <span>{describePromo(promo)}</span>
+              </div>
+            )}
+            {promoError && <p className="field-error">{promoError}</p>}
             <div className="summary-row">
               <span>Livraison</span>
               <span>{totals.deliveryCost === 0 ? "Offerte" : formatXOF(totals.deliveryCost)}</span>

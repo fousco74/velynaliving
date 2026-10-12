@@ -25,7 +25,7 @@ const SECTIONS: { heading: string; text: string }[] = [
   },
   {
     heading: "6. Codes promotionnels",
-    text: "Un seul code par commande. Le code VELYNA10 accorde 10 % de remise sur le sous-total. La remise s'applique avant le calcul du seuil de livraison offerte.",
+    text: "Un seul code par commande. Chaque code a ses propres conditions — période de validité, nombre d'utilisations, montant minimum d'achat — précisées lors de sa diffusion. La remise s'applique au sous-total, avant le calcul du seuil de livraison offerte. Un code n'est ni remboursable ni convertible en espèces.",
   },
   {
     heading: "7. Droit applicable",

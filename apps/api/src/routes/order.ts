@@ -1,6 +1,7 @@
 import express from "express";
-import { computeTotals, orderInputSchema, orderTrackSchema, isPromoCode } from "@velyna/shared";
+import { computeTotals, orderInputSchema, orderTrackSchema } from "@velyna/shared";
 import { prisma } from "../db.js";
+import { resolvePromo, type ResolvedPromo } from "../lib/promo.js";
 
 export const orderRouter = express.Router();
 
@@ -91,10 +92,26 @@ orderRouter.post("/", async (req, res) => {
     });
   }
 
-  const promoCode =
-    input.promoCode && isPromoCode(input.promoCode) ? input.promoCode.toUpperCase() : null;
-  const totals = computeTotals(lines, input.deliveryMethod, promoCode);
   const email = input.email.toLowerCase();
+
+  // Un code refusé arrête la commande au lieu d'être ignoré : le client a vu
+  // une remise dans son panier, il ne doit pas payer plus sans le savoir.
+  let promo: ResolvedPromo | null = null;
+
+  if (input.promoCode) {
+    const result = await resolvePromo(prisma, input.promoCode, {
+      subTotal: computeTotals(lines, input.deliveryMethod).subTotal,
+      email,
+    });
+
+    if ("error" in result) {
+      return res.status(400).json({ error: result.error, field: "promoCode" });
+    }
+
+    promo = result.promo;
+  }
+
+  const totals = computeTotals(lines, input.deliveryMethod, promo);
 
   // Le numéro est unique en base : en cas de collision avec une commande
   // concurrente, on retente avec le rang suivant.
@@ -134,6 +151,21 @@ orderRouter.post("/", async (req, res) => {
           }
         }
 
+        if (promo) {
+          // Même garde que le stock : si d'autres commandes ont épuisé le code
+          // (ou si l'admin l'a désactivé) depuis la vérification, count vaut 0.
+          const { count } = await tx.promoCode.updateMany({
+            where: {
+              id: promo.id,
+              active: true,
+              ...(promo.maxUses !== null && { usedCount: { lt: promo.maxUses } }),
+            },
+            data: { usedCount: { increment: 1 } },
+          });
+
+          if (count === 0) throw new Error("PROMO_EXHAUSTED");
+        }
+
         return tx.order.create({
           data: {
             number,
@@ -148,7 +180,8 @@ orderRouter.post("/", async (req, res) => {
             deliveryMethod: input.deliveryMethod,
             subTotal: totals.subTotal,
             discount: totals.discount,
-            promoCode,
+            promoCode: promo?.code ?? null,
+            promoCodeId: promo?.id ?? null,
             deliveryCost: totals.deliveryCost,
             total: totals.total,
             items: { create: lines },
@@ -166,6 +199,13 @@ orderRouter.post("/", async (req, res) => {
 
       if (message.startsWith("OUT_OF_STOCK:")) {
         return res.status(409).json({ error: `Stock insuffisant pour ${message.split(":")[1]}.` });
+      }
+
+      if (message === "PROMO_EXHAUSTED") {
+        return res.status(409).json({
+          error: "Ce code promo vient d'atteindre sa limite d'utilisations.",
+          field: "promoCode",
+        });
       }
 
       // P2002 = violation de contrainte unique, ici le numéro de commande.

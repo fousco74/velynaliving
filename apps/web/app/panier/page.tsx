@@ -3,21 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  computeTotals,
-  formatXOF,
-  FREE_DELIVERY_THRESHOLD,
-  isPromoCode,
-  PROMO_CODE,
-} from "@velyna/shared";
+import { computeTotals, describePromo, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
-import { imageSrc } from "@/lib/api";
+import { ApiError, checkPromo, imageSrc, type CheckedPromo } from "@/lib/api";
 
 export default function PanierPage() {
   const { lines, setQuantity, remove, ready, count } = useCart();
   const [promoInput, setPromoInput] = useState("");
-  const [promo, setPromo] = useState<string | null>(null);
+  const [promo, setPromo] = useState<CheckedPromo | null>(null);
   const [promoError, setPromoError] = useState("");
+  const [checking, setChecking] = useState(false);
 
   // Le montant affiché vient de la même fonction que celle utilisée par l'API :
   // le panier ne peut pas annoncer un total que le serveur refuserait.
@@ -27,14 +22,21 @@ export default function PanierPage() {
     promo,
   );
 
-  const applyPromo = (event: React.FormEvent) => {
+  // Les codes vivent en base (dates, limites) : seule l'API sait s'ils sont
+  // valables. Le panier n'en garde que la règle, pour l'affichage.
+  const applyPromo = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (isPromoCode(promoInput)) {
-      setPromo(promoInput.trim().toUpperCase());
+    if (!promoInput.trim()) return;
+
+    setChecking(true);
+    try {
+      setPromo(await checkPromo(promoInput, totals.subTotal));
       setPromoError("");
-    } else {
+    } catch (err) {
       setPromo(null);
-      setPromoError("Ce code n'est pas valide.");
+      setPromoError(err instanceof ApiError ? err.message : "Vérification impossible, réessayez.");
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -194,7 +196,7 @@ export default function PanierPage() {
               </div>
               {totals.discount > 0 && (
                 <div className="summary-row">
-                  <span>Code {PROMO_CODE}</span>
+                  <span>Code {promo?.code}</span>
                   <span>−{formatXOF(totals.discount)}</span>
                 </div>
               )}
@@ -230,7 +232,8 @@ export default function PanierPage() {
                   type="text"
                   value={promoInput}
                   onChange={(event) => setPromoInput(event.target.value)}
-                  placeholder={PROMO_CODE}
+                  placeholder="Votre code"
+                  autoComplete="off"
                   style={{
                     flex: 1,
                     minWidth: 0,
@@ -244,21 +247,22 @@ export default function PanierPage() {
                 <button
                   type="submit"
                   className="tag"
+                  disabled={checking}
                   style={{ background: "none", border: 0, cursor: "pointer" }}
                 >
-                  Appliquer
+                  {checking ? "…" : "Appliquer"}
                 </button>
               </form>
 
               {promoError && <p className="field-error">{promoError}</p>}
               {promo && (
                 <p style={{ margin: "10px 0 0", fontSize: 16, color: "var(--kai-soft)" }}>
-                  Code appliqué — 10 % de remise.
+                  {promo.label} — {describePromo(promo)}.
                 </p>
               )}
 
               <Link
-                href={promo ? `/commande?promo=${promo}` : "/commande"}
+                href={promo ? `/commande?promo=${encodeURIComponent(promo.code)}` : "/commande"}
                 className="btn btn-solid btn-block"
                 style={{ marginTop: 22 }}
               >

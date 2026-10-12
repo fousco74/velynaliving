@@ -7,6 +7,7 @@ import { productRouter } from "./routes/product.js";
 import { orderRouter } from "./routes/order.js";
 import { journalRouter } from "./routes/journal.js";
 import { siteImageRouter } from "./routes/site-image.js";
+import { promoCodeRouter } from "./routes/promo-code.js";
 import { storage } from "./lib/storage.js";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
@@ -52,6 +53,7 @@ export const createApp = () => {
   app.use("/orders", orderRouter);
   app.use("/journal", journalRouter);
   app.use("/site-images", siteImageRouter);
+  app.use("/promo-codes", promoCodeRouter);
 
   app.use(notFound);
   app.use(onError);

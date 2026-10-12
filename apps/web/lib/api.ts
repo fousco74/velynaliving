@@ -1,4 +1,11 @@
-import { resolveSiteImages, type SiteImageKey, type SiteImages } from "@velyna/shared";
+import {
+  resolveSiteImages,
+  type PromoCodeInput,
+  type PromoCodeUpdate,
+  type PromoRule,
+  type SiteImageKey,
+  type SiteImages,
+} from "@velyna/shared";
 
 /** Adresse publique de l'API : la seule qui ait un sens pour un navigateur. */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4001";
@@ -87,6 +94,8 @@ export class ApiError extends Error {
     readonly status: number,
     /** Détail Zod renvoyé par l'API, pour afficher l'erreur au bon champ. */
     readonly issues?: ApiIssue[],
+    /** Champ fautif signalé hors Zod (ex. `promoCode` refusé à la commande). */
+    readonly field?: string,
   ) {
     super(message);
   }
@@ -105,10 +114,16 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(payload?.error ?? "Une erreur est survenue.", res.status, payload?.issues);
+    throw new ApiError(
+      payload?.error ?? "Une erreur est survenue.",
+      res.status,
+      payload?.issues,
+      payload?.field,
+    );
   }
 
-  return payload.data as T;
+  // `?.` : un 204 (suppression) n'a pas de corps.
+  return payload?.data as T;
 };
 
 const productsUrl = (params?: { house?: string; sort?: string; detail?: boolean }) => {
@@ -132,6 +147,18 @@ export const getHouses = () => request<House[]>("/houses");
 
 export const createOrder = (body: unknown) =>
   request<Order>("/orders", { method: "POST", body: JSON.stringify(body) });
+
+/** Code vérifié par l'API, prêt à passer à `computeTotals`. */
+export type CheckedPromo = PromoRule & { label: string; minSubTotal: number | null };
+
+/**
+ * Vérifie un code depuis le panier. Le sous-total ne sert qu'au message
+ * « valable dès … » : la commande revérifie tout avec les vrais prix.
+ */
+export const checkPromo = (code: string, subTotal?: number) =>
+  request<CheckedPromo>(
+    `/promo-codes/${encodeURIComponent(code.trim())}${subTotal === undefined ? "" : `?subTotal=${subTotal}`}`,
+  );
 
 export const trackOrder = (number: string, email: string) =>
   request<Order>(`/orders/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`);
@@ -429,6 +456,41 @@ export const deleteArticle = (slug: string) =>
   request<{ slug: string; deleted: boolean }>(`/admin/journal/${encodeURIComponent(slug)}`, {
     method: "DELETE",
   });
+
+// ─────────────────────── Codes promo ───────────────────────
+
+export type AdminPromoCode = PromoRule & {
+  id: number;
+  label: string;
+  startsAt: string | null;
+  endsAt: string | null;
+  minSubTotal: number | null;
+  maxUses: number | null;
+  usedCount: number;
+  oncePerCustomer: boolean;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  /** Commandes non annulées passées avec ce code. */
+  stats: { orders: number; discount: number; revenue: number };
+};
+
+export const getAdminPromoCodes = () => request<AdminPromoCode[]>("/admin/promo-codes");
+
+export const getAdminPromoCode = (id: number) =>
+  request<AdminPromoCode>(`/admin/promo-codes/${id}`);
+
+export const createPromoCode = (body: PromoCodeInput) =>
+  request<AdminPromoCode>("/admin/promo-codes", { method: "POST", body: JSON.stringify(body) });
+
+export const updatePromoCode = (id: number, patch: PromoCodeUpdate) =>
+  request<AdminPromoCode>(`/admin/promo-codes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+
+export const deletePromoCode = (id: number) =>
+  request<null>(`/admin/promo-codes/${id}`, { method: "DELETE" });
 
 // ─────────────────────── Images du site ───────────────────────
 

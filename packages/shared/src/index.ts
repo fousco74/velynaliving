@@ -13,8 +13,6 @@ export const DELIVERY_OPTIONS: Record<
 };
 
 export const FREE_DELIVERY_THRESHOLD = 50000;
-export const PROMO_CODE = "VELYNA10";
-export const PROMO_RATE = 0.1;
 export const EUR_RATE = 655.957;
 
 export const OPERATORS = [
@@ -69,23 +67,52 @@ export type Totals = {
   freeDelivery: boolean;
 };
 
+// ─── Codes promo ───
+
+export const PROMO_TYPES = ["PERCENT", "AMOUNT", "FREE_DELIVERY"] as const;
+export type PromoType = (typeof PROMO_TYPES)[number];
+
+export const PROMO_TYPE_LABELS: Record<PromoType, string> = {
+  PERCENT: "Pourcentage",
+  AMOUNT: "Montant fixe",
+  FREE_DELIVERY: "Livraison offerte",
+};
+
+/** Ce dont `computeTotals` a besoin pour appliquer un code déjà validé par l'API. */
+export type PromoRule = { code: string; type: PromoType; value: number };
+
+/** Les codes sont stockés en majuscules : « noel26 » et « NOEL26 » sont le même code. */
+export const normalizePromoCode = (code: string) => code.trim().toUpperCase();
+
+/** « -15 % », « -5 000 F CFA », « Livraison offerte ». */
+export const describePromo = ({ type, value }: Pick<PromoRule, "type" | "value">) =>
+  type === "PERCENT" ? `-${value} %` : type === "AMOUNT" ? `-${formatXOF(value)}` : "Livraison offerte";
+
 /**
  * Source de vérité des montants, partagée entre l'API et le panier.
  * La remise s'applique avant le seuil de livraison offerte : le client ne peut
  * pas atteindre la gratuité grâce à un montant qu'il ne paiera pas.
+ *
+ * `promo` doit avoir été validé par l'API (dates, limites) : ici on ne fait
+ * que l'arithmétique.
  */
 export const computeTotals = (
   items: PricedItem[],
   deliveryMethod: DeliveryMethod,
-  promoCode?: string | null,
+  promo?: PromoRule | null,
 ): Totals => {
   const subTotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
-  const promoApplies = promoCode?.trim().toUpperCase() === PROMO_CODE;
-  const discount = promoApplies ? Math.round(subTotal * PROMO_RATE) : 0;
+  const discount =
+    promo?.type === "PERCENT"
+      ? Math.round((subTotal * promo.value) / 100)
+      : promo?.type === "AMOUNT"
+        ? Math.min(promo.value, subTotal)
+        : 0;
 
   const base = DELIVERY_OPTIONS[deliveryMethod].cost;
-  const freeDelivery = subTotal - discount >= FREE_DELIVERY_THRESHOLD;
+  const freeDelivery =
+    promo?.type === "FREE_DELIVERY" || subTotal - discount >= FREE_DELIVERY_THRESHOLD;
   const deliveryCost = freeDelivery ? 0 : base;
 
   return {
@@ -96,8 +123,6 @@ export const computeTotals = (
     freeDelivery,
   };
 };
-
-export const isPromoCode = (code: string) => code.trim().toUpperCase() === PROMO_CODE;
 
 export const deliveryMethodSchema = z.enum(DELIVERY_METHODS);
 export const operatorSchema = z.enum(OPERATORS);
@@ -629,3 +654,126 @@ export const resolveSiteImages = (
 };
 
 export const siteImageUpdateSchema = z.object({ path: imagePathSchema });
+
+// ─────────────────────────── Codes promo (back-office) ───────────────────────────
+
+/** Majuscules, chiffres, tirets et soulignés : ce que la cliente peut dicter au téléphone. */
+export const promoCodeSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z0-9_-]{3,30}$/, "3 à 30 caractères : lettres, chiffres, - ou _");
+
+/** Date de calendrier AAAA-MM-JJ, ou vide pour « pas de borne ». */
+const promoDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date attendue au format AAAA-MM-JJ")
+  .or(z.literal(""))
+  .nullable()
+  .optional();
+
+/** Limite numérique optionnelle : `null` (ou absente) = pas de limite. */
+const promoLimitSchema = z.number().int().positive().max(100000000).nullable().optional();
+
+const promoFields = {
+  label: z.string().trim().min(2, "Nom de l'événement requis").max(80),
+  type: z.enum(PROMO_TYPES),
+  value: z.number().int().min(0).max(100000000),
+  startsAt: promoDateSchema,
+  endsAt: promoDateSchema,
+  minSubTotal: promoLimitSchema,
+  maxUses: promoLimitSchema,
+  oncePerCustomer: z.boolean(),
+  active: z.boolean(),
+};
+
+type PromoShape = {
+  type?: PromoType;
+  value?: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
+};
+
+/**
+ * Cohérence type ↔ valeur et ordre des dates. Les dates AAAA-MM-JJ se
+ * comparent comme des chaînes, sans passer par `Date`.
+ */
+const checkPromo = (promo: PromoShape, ctx: z.RefinementCtx) => {
+  if (promo.type === "PERCENT" && (promo.value === undefined || promo.value < 1 || promo.value > 100)) {
+    ctx.addIssue({ code: "custom", path: ["value"], message: "Pourcentage entre 1 et 100" });
+  }
+  if (promo.type === "AMOUNT" && (promo.value === undefined || promo.value < 1)) {
+    ctx.addIssue({ code: "custom", path: ["value"], message: "Le montant doit être positif" });
+  }
+  if (promo.startsAt && promo.endsAt && promo.endsAt < promo.startsAt) {
+    ctx.addIssue({ code: "custom", path: ["endsAt"], message: "La fin précède le début" });
+  }
+};
+
+export const promoCodeInputSchema = z
+  .object({
+    code: promoCodeSchema,
+    ...promoFields,
+    oncePerCustomer: promoFields.oncePerCustomer.default(false),
+    active: promoFields.active.default(true),
+  })
+  .superRefine(checkPromo);
+
+/**
+ * PATCH : champs redéclarés optionnels, SANS les `.default()` de la création
+ * (sinon `PATCH {}` réactiverait un code désactivé). Le code lui-même n'est
+ * pas modifiable : il a peut-être déjà été diffusé. Le changement de type sans
+ * valeur est vérifié côté API, qui connaît la valeur en base.
+ */
+export const promoCodeUpdateSchema = z
+  .object({
+    label: promoFields.label.optional(),
+    type: promoFields.type.optional(),
+    value: promoFields.value.optional(),
+    startsAt: promoFields.startsAt,
+    endsAt: promoFields.endsAt,
+    minSubTotal: promoFields.minSubTotal,
+    maxUses: promoFields.maxUses,
+    oncePerCustomer: promoFields.oncePerCustomer.optional(),
+    active: promoFields.active.optional(),
+  })
+  .refine((patch) => Object.keys(patch).length > 0, "Aucune modification demandée.");
+
+/** Contrôle de cohérence réutilisable par l'API sur l'état fusionné (base + PATCH). */
+export const validatePromoShape = (promo: PromoShape) =>
+  z.custom<PromoShape>().superRefine(checkPromo).safeParse(promo);
+
+export const promoCheckQuerySchema = z.object({
+  subTotal: z.coerce.number().int().min(0).max(1000000000).optional(),
+});
+
+export type PromoCodeInput = z.infer<typeof promoCodeInputSchema>;
+export type PromoCodeUpdate = z.infer<typeof promoCodeUpdateSchema>;
+
+export const PROMO_STATES = ["ACTIVE", "SCHEDULED", "EXPIRED", "EXHAUSTED", "DISABLED"] as const;
+export type PromoState = (typeof PROMO_STATES)[number];
+
+export const PROMO_STATE_LABELS: Record<PromoState, string> = {
+  ACTIVE: "Actif",
+  SCHEDULED: "Programmé",
+  EXPIRED: "Expiré",
+  EXHAUSTED: "Épuisé",
+  DISABLED: "Désactivé",
+};
+
+type PromoWindow = {
+  active: boolean;
+  startsAt: Date | string | null;
+  endsAt: Date | string | null;
+  maxUses: number | null;
+  usedCount: number;
+};
+
+/** État d'un code à un instant donné. L'ordre des tests est celui de l'admin : pourquoi il ne marche pas. */
+export const promoState = (promo: PromoWindow, now = new Date()): PromoState => {
+  if (!promo.active) return "DISABLED";
+  if (promo.endsAt && new Date(promo.endsAt) < now) return "EXPIRED";
+  if (promo.maxUses !== null && promo.usedCount >= promo.maxUses) return "EXHAUSTED";
+  if (promo.startsAt && new Date(promo.startsAt) > now) return "SCHEDULED";
+  return "ACTIVE";
+};

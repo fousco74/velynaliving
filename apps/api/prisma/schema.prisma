@@ -64,6 +64,13 @@ enum PaymentStatus {
   FAILED
 }
 
+// Nature de la remise d'un code promo, choisie à la création.
+enum PromoType {
+  PERCENT // value = pourcentage (1 à 100) du sous-total
+  AMOUNT // value = montant fixe en F CFA, plafonné au sous-total
+  FREE_DELIVERY // value = 0 : seuls les frais de livraison sont offerts
+}
+
 // ─────────────────────────── Comptes ───────────────────────────
 
 // V1 : sert uniquement aux comptes admin. Les clients commandent en invité.
@@ -195,20 +202,51 @@ model Order {
   subTotal     Int     @map("sub_total")
   deliveryCost Int     @map("delivery_cost")
   discount     Int     @default(0)
+  // Snapshot du code saisi, affiché tel quel ; promoCodeId sert aux
+  // statistiques et aux limites d'utilisation.
   promoCode    String? @map("promo_code")
+  promoCodeId  Int?    @map("promo_code_id")
   total        Int
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   customer Customer       @relation(fields: [customerId], references: [id])
+  promo    PromoCode?     @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
   items    OrderProduct[]
   payment  Payment?
 
   @@index([customerId])
+  @@index([promoCodeId])
   @@index([status])
   @@index([createdAt])
   @@map("order")
+}
+
+// Code promo événementiel (anniversaire, Noël…), créé depuis le back-office.
+// Les dates sont des bornes inclusives en UTC, qui est l'heure d'Abidjan.
+// Toutes les limites sont optionnelles : null = pas de limite.
+model PromoCode {
+  id              Int       @id @default(autoincrement())
+  code            String    @unique // toujours en majuscules, immuable une fois créé
+  label           String // nom de l'événement
+  type            PromoType
+  value           Int
+  startsAt        DateTime? @map("starts_at")
+  endsAt          DateTime? @map("ends_at")
+  minSubTotal     Int?      @map("min_sub_total")
+  maxUses         Int?      @map("max_uses")
+  // Compteur décrémenté atomiquement à la commande, comme le stock, et rendu
+  // quand la commande est annulée ou remboursée.
+  usedCount       Int       @default(0) @map("used_count")
+  oncePerCustomer Boolean   @default(false) @map("once_per_customer")
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("promo_code")
 }
 
 // Ligne de commande : document comptable figé, pas une vue sur le catalogue.

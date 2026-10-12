@@ -68,7 +68,7 @@ Dérivé des commandes dans le design : `nom`, `email`, `tel`, `commune`, nombre
 
 - **Livraison** : Abidjan 2 000 F (24-48 h) · Intérieur 5 000 F (3-5 j) · Retrait boutique Cocody gratuit (24 h).
 - **Livraison offerte dès 50 000 F CFA** d'achat.
-- **Code promo** : `VELYNA10` = -10 %.
+- **Code promo** : `VELYNA10` = -10 % (désormais un code en base parmi d'autres, géré dans `/admin/codes-promo`).
 - **Retours** sous 14 jours, remboursement sous 7 jours ouvrés.
 - **Téléphone** : format `+225 07 00 00 00 00` (voir `phoneCI` dans `packages/shared`).
 - **Communes** (14) : Cocody, Plateau, Marcory, Treichville, Yopougon, Abobo, Adjamé, Attécoubé, Koumassi, Port-Bouët, Bingerville, Songon, Anyama, Autre.
