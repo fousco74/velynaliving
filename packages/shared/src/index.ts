@@ -154,11 +154,44 @@ export const COMMUNES_ABIDJAN = [
   "Autre",
 ] as const;
 
-/** Format imposé par le design : +225 07 00 00 00 00 */
+/**
+ * Numéro ivoirien, saisi comme le client en a l'habitude : 0574179718,
+ * 05 74 17 97 18, +2250574179718, 002250574179718… Renvoie toujours la forme
+ * du design, `+225 05 74 17 97 18`, ou `null` si ce n'est pas un numéro à
+ * 10 chiffres (format en vigueur depuis 2021).
+ */
+export const normalizePhoneCI = (input: string): string | null => {
+  let digits = input.replace(/[\s.\-()/]/g, "");
+
+  if (digits.startsWith("+")) digits = digits.slice(1);
+  else if (digits.startsWith("00")) digits = digits.slice(2);
+
+  // Le préfixe pays ne s'enlève que s'il laisse exactement 10 chiffres :
+  // un numéro local peut lui-même commencer par 2 (fixes en 21, 25, 27).
+  if (digits.length === 13 && digits.startsWith("225")) digits = digits.slice(3);
+
+  if (!/^\d{10}$/.test(digits)) return null;
+
+  return `+225 ${digits.match(/\d{2}/g)!.join(" ")}`;
+};
+
+/** Accepte toutes les saisies courantes, enregistre toujours `+225 07 00 00 00 00`. */
 export const phoneCI = z
   .string()
   .trim()
-  .regex(/^\+225 \d{2} \d{2} \d{2} \d{2} \d{2}$/, "Format attendu : +225 07 00 00 00 00");
+  .transform((value, ctx) => {
+    const phone = normalizePhoneCI(value);
+
+    if (!phone) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Numéro ivoirien à 10 chiffres, ex. 07 00 00 00 00",
+      });
+      return z.NEVER;
+    }
+
+    return phone;
+  });
 
 export const contactSchema = z.object({
   email: z.email("Adresse e-mail invalide"),

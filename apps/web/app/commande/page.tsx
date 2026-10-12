@@ -11,6 +11,7 @@ import {
   describePromo,
   formatXOF,
   FREE_DELIVERY_THRESHOLD,
+  normalizePhoneCI,
   OPERATOR_LABELS,
   OPERATORS,
   type DeliveryMethod,
@@ -22,7 +23,6 @@ import { ApiError, checkPromo, createOrder, imageSrc, type CheckedPromo } from "
 const STEPS = ["Coordonnées", "Livraison", "Règlement"];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^\+225 \d{2} \d{2} \d{2} \d{2} \d{2}$/;
 
 type Form = {
   firstName: string;
@@ -99,7 +99,9 @@ function CommandeContent() {
       if (!form.firstName.trim()) next.firstName = "Prénom requis";
       if (!form.lastName.trim()) next.lastName = "Nom requis";
       if (!EMAIL_RE.test(form.email)) next.email = "Adresse e-mail invalide";
-      if (!PHONE_RE.test(form.phone)) next.phone = "Format attendu : +225 07 00 00 00 00";
+      if (!normalizePhoneCI(form.phone)) {
+        next.phone = "Numéro ivoirien à 10 chiffres, ex. 07 00 00 00 00";
+      }
     }
 
     if (step === 1) {
@@ -238,9 +240,14 @@ function CommandeContent() {
                     id="phone"
                     label="Téléphone"
                     type="tel"
-                    placeholder="+225 07 00 00 00 00"
+                    placeholder="07 00 00 00 00"
                     value={form.phone}
                     onChange={set("phone")}
+                    // Le client voit la forme exacte qui sera enregistrée.
+                    onBlur={() => {
+                      const phone = normalizePhoneCI(form.phone);
+                      if (phone) setForm((current) => ({ ...current, phone }));
+                    }}
                     error={errors.phone}
                   />
                 </div>
@@ -478,6 +485,7 @@ const Field = ({
   label,
   value,
   onChange,
+  onBlur,
   error,
   type = "text",
   placeholder,
@@ -486,13 +494,21 @@ const Field = ({
   label: string;
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: () => void;
   error?: string;
   type?: string;
   placeholder?: string;
 }) => (
   <div className="field">
     <label htmlFor={id}>{label}</label>
-    <input id={id} type={type} value={value} onChange={onChange} placeholder={placeholder} />
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      placeholder={placeholder}
+    />
     {error && <p className="field-error">{error}</p>}
   </div>
 );
