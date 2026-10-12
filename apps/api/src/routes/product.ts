@@ -60,6 +60,7 @@ productRouter.get("/:slug", async (req, res) => {
       imgDetail: true,
       detailBackground: true,
       inkColor: true,
+      video: true,
       usage: true,
       id: true,
     },

@@ -34,6 +34,7 @@ type FormState = {
   usage: string;
   description: string;
   imgDetail: string;
+  video: string;
   detailBackground: string;
   inkColor: string;
 };
@@ -57,6 +58,7 @@ const EMPTY: FormState = {
   usage: "",
   description: "",
   imgDetail: "",
+  video: "",
   detailBackground: "",
   inkColor: "",
 };
@@ -81,6 +83,7 @@ const fromProduct = (product: AdminProductFull): FormState => ({
   usage: product.usage ?? "",
   description: product.description ?? "",
   imgDetail: product.imgDetail ?? "",
+  video: product.video ?? "",
   detailBackground: product.detailBackground ?? "",
   inkColor: product.inkColor ?? "",
 });
@@ -113,6 +116,7 @@ const toPayload = (form: FormState): ProductPayload => ({
   usage: form.usage.trim(),
   description: form.description.trim(),
   imgDetail: form.imgDetail.trim(),
+  video: form.video.trim(),
   detailBackground: form.detailBackground.trim(),
   inkColor: form.inkColor.trim(),
 });
@@ -331,6 +335,19 @@ export const ProductForm = ({ product }: { product?: AdminProductFull }) => {
             onChange={(value) => set("imgDetail", value)}
             hint="Remplace l'image principale en haut de la fiche produit."
           />
+
+          <div className="field">
+            <label htmlFor="p-video">Vidéo de la fiche (optionnel)</label>
+            <input
+              id="p-video"
+              value={form.video}
+              onChange={(event) => set("video", event.target.value)}
+              placeholder="/assets/matcha-rituel.mp4"
+            />
+            <p className="admin-hint">
+              Film d&apos;ambiance en boucle muette, affiché sous le bloc d&apos;achat. MP4 ou WebM.
+            </p>
+          </div>
 
           <div className="field">
             <label htmlFor="p-bg">Fond de la fiche (optionnel)</label>

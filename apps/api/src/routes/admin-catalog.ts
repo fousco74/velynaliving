@@ -19,6 +19,7 @@ const PRODUCT_FULL = {
   status: true,
   img: true,
   imgDetail: true,
+  video: true,
   detailBackground: true,
   inkColor: true,
   headNote: true,
@@ -35,6 +36,7 @@ const PRODUCT_FULL = {
 /** Champs nullables en base : un formulaire vide doit écrire `null`, pas `""`. */
 const NULLABLE = [
   "imgDetail",
+  "video",
   "detailBackground",
   "inkColor",
   "headNote",

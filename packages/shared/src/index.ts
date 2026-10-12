@@ -366,6 +366,19 @@ export const imagePathSchema = z
     "Chemin attendu : /assets/fichier.jpeg ou /uploads/fichier.jpeg",
   );
 
+/**
+ * Chemin de vidéo accepté en base : mêmes préfixes que les images, formats
+ * lus nativement par tous les navigateurs (MP4 H.264, WebM).
+ */
+export const videoPathSchema = z
+  .string()
+  .trim()
+  .max(300)
+  .regex(
+    /^\/(assets|uploads)\/[A-Za-z0-9._-]+\.(mp4|webm)$/,
+    "Chemin attendu : /assets/fichier.mp4 ou /uploads/fichier.mp4",
+  );
+
 /** Couleur hexadécimale du design (#RRGGBB). */
 export const hexColorSchema = z
   .string()
@@ -395,6 +408,7 @@ export const houseUpdateSchema = houseInputSchema
  */
 const productEditorialFields = {
   imgDetail: imagePathSchema.or(z.literal("")).optional(),
+  video: videoPathSchema.or(z.literal("")).optional(),
   detailBackground: hexColorSchema.or(z.literal("")).optional(),
   inkColor: hexColorSchema.or(z.literal("")).optional(),
   headNote: optionalText(200),

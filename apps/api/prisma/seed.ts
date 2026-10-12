@@ -141,6 +141,7 @@ const products = [
     newRank: 6,
     img: "/assets/velyna-kai.jpeg",
     imgDetail: "/assets/velynakai-produit.jpeg",
+    video: "/assets/matcha-rituel.mp4",
     detailBackground: "#7C8446",
     inkColor: "#F4F5E8",
     headNote: "Attaque végétale, herbe fraîche",

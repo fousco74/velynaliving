@@ -30,7 +30,7 @@ const main = async () => {
   // Toute table qui stocke un chemin d'image doit figurer ici : un oubli fait
   // passer ses images pour orphelines, et `--apply` les supprime.
   const [products, articles, siteImages] = await Promise.all([
-    prisma.product.findMany({ select: { img: true, imgDetail: true } }),
+    prisma.product.findMany({ select: { img: true, imgDetail: true, video: true } }),
     prisma.journal.findMany({ select: { imageUrl: true } }),
     prisma.siteImage.findMany({ select: { path: true } }),
   ]);
@@ -45,6 +45,7 @@ const main = async () => {
   for (const product of products) {
     keep(product.img);
     keep(product.imgDetail);
+    keep(product.video);
   }
 
   for (const article of articles) keep(article.imageUrl);

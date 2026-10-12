@@ -141,6 +141,8 @@ model Product {
   imgDetail        String? @map("img_detail")
   detailBackground String? @map("detail_background")
   inkColor         String? @map("ink_color")
+  // Vidéo d'ambiance de la fiche (boucle muette) : /assets/… ou /uploads/….
+  video            String?
 
   // Notes olfactives : nullables, le matcha n'en a pas au même sens.
   headNote       String? @map("head_note")

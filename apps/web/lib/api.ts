@@ -55,6 +55,7 @@ export type ProductEditorial = ProductCard & {
 
 export type Product = ProductEditorial & {
   imgDetail: string | null;
+  video: string | null;
   detailBackground: string | null;
   inkColor: string | null;
   usage: string | null;
@@ -387,6 +388,7 @@ export const deleteHouse = (slug: string) =>
 /** Fiche complète servie par GET /admin/products/:slug, éditée par le formulaire. */
 export type AdminProductFull = AdminProduct & {
   imgDetail: string | null;
+  video: string | null;
   detailBackground: string | null;
   inkColor: string | null;
   headNote: string | null;
@@ -410,6 +412,7 @@ export type ProductPayload = {
   img?: string;
   status?: "ONLINE" | "DRAFT";
   imgDetail?: string;
+  video?: string;
   detailBackground?: string;
   inkColor?: string;
   headNote?: string;

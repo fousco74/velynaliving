@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { formatRating, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
 import { imageSrc, ApiError, getProduct, getProductReviews, type ReviewPage } from "@/lib/api";
 import { AddToCart } from "@/components/add-to-cart";
+import { AmbientVideo } from "@/components/ambient-video";
+import { RITUAL } from "@/lib/matcha";
 import { Reviews } from "@/components/reviews";
 import { Stars } from "@/components/stars";
 
@@ -173,6 +175,64 @@ export default async function ProductPage({ params }: PageProps<"/produit/[slug]
           </p>
         </div>
       </div>
+
+      {product.video && (
+        // Juste après l'achat : c'est là qu'on se demande « à quoi ça ressemble
+        // chez moi ? ». Le profil technique vient ensuite.
+        <section
+          aria-label="Le produit en vidéo"
+          className={`border-t border-line px-(--gutter) py-[clamp(48px,6vw,96px)] ${isKai ? "bg-[#f1f2e6]" : "bg-surface-soft"}`}
+        >
+          <div className="grid items-center gap-y-10 md:grid-cols-12 md:gap-x-[clamp(24px,4vw,64px)]">
+            <AmbientVideo
+              src={imageSrc(product.video)}
+              // L'affiche suit la convention « même nom, en .jpg » : sans elle,
+              // le cadre resterait vide le temps du chargement.
+              poster={imageSrc(product.video.replace(/\.(mp4|webm)$/, ".jpg"))}
+              label={`${product.name} — film d'ambiance`}
+              className="md:col-span-7"
+            />
+
+            <div className="md:col-span-5 lg:col-span-4 lg:col-start-9">
+              <p className="eyebrow mb-4 text-kai-soft">{isKai ? "Le rituel" : "En images"}</p>
+              <h2 className="h2 m-0 text-[clamp(26px,2.6vw,40px)]">
+                {isKai ? (
+                  <>
+                    Un matin, un fouet,
+                    <br />
+                    <span className="italic">une tasse.</span>
+                  </>
+                ) : (
+                  product.name
+                )}
+              </h2>
+
+              {isKai && (
+                <ol className="mt-8 mb-0 list-none p-0">
+                  {RITUAL.map((step) => (
+                    <li
+                      key={step.num}
+                      className="grid grid-cols-[34px_1fr] gap-x-3 border-t border-[rgba(163,175,150,0.5)] py-4 last:border-b"
+                    >
+                      <span className="pt-1 font-sans text-[10px] font-light tracking-[0.2em] text-kai-soft">
+                        {step.num}
+                      </span>
+                      <div>
+                        <p className="m-0 font-serif text-[19px] tracking-[-0.02em]">
+                          {step.title}
+                        </p>
+                        <p className="mt-1 mb-0 text-[16px] leading-[1.6] text-muted">
+                          {step.text}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {(product.headNote || product.heartNote || product.backgroundNote) && (
         <section

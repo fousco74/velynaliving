@@ -82,6 +82,11 @@ constante : la migration `promo_code` l'a inséré en base.
 **Avis clients** (`/admin/avis`) : dépôt ouvert à tous depuis la fiche produit, publication
 après modération, réponse de la maison, badge « Achat vérifié », JSON-LD `AggregateRating`.
 
+**Vidéo de fiche produit** : colonne `Product.video` (MP4/WebM, `/assets/…` ou `/uploads/…`),
+lue en boucle muette par `AmbientVideo` seulement quand elle est à l'écran, jamais en
+`prefers-reduced-motion`. L'affiche est le même chemin en `.jpg`. Le matcha a
+`/assets/matcha-rituel.mp4` (posé par la migration `product_video`).
+
 Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 
 ## Règles non négociables
