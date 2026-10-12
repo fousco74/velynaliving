@@ -3,16 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { computeTotals, describePromo, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
+import { computeTotals, formatXOF, FREE_DELIVERY_THRESHOLD } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
-import { ApiError, checkPromo, imageSrc, type CheckedPromo } from "@/lib/api";
+import { PromoField } from "@/components/promo-field";
+import { imageSrc, type CheckedPromo } from "@/lib/api";
 
 export default function PanierPage() {
   const { lines, setQuantity, remove, ready, count } = useCart();
-  const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<CheckedPromo | null>(null);
-  const [promoError, setPromoError] = useState("");
-  const [checking, setChecking] = useState(false);
 
   // Le montant affiché vient de la même fonction que celle utilisée par l'API :
   // le panier ne peut pas annoncer un total que le serveur refuserait.
@@ -21,24 +19,6 @@ export default function PanierPage() {
     "ABIDJAN",
     promo,
   );
-
-  // Les codes vivent en base (dates, limites) : seule l'API sait s'ils sont
-  // valables. Le panier n'en garde que la règle, pour l'affichage.
-  const applyPromo = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!promoInput.trim()) return;
-
-    setChecking(true);
-    try {
-      setPromo(await checkPromo(promoInput, totals.subTotal));
-      setPromoError("");
-    } catch (err) {
-      setPromo(null);
-      setPromoError(err instanceof ApiError ? err.message : "Vérification impossible, réessayez.");
-    } finally {
-      setChecking(false);
-    }
-  };
 
   return (
     <>
@@ -209,57 +189,7 @@ export default function PanierPage() {
                 <span>{formatXOF(totals.subTotal - totals.discount)}</span>
               </div>
 
-              <form
-                onSubmit={applyPromo}
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 14,
-                  borderBottom: "1px solid var(--line-strong)",
-                  paddingBottom: 10,
-                  marginTop: 18,
-                }}
-              >
-                <label
-                  htmlFor="promo"
-                  className="tag"
-                  style={{ fontSize: 9, letterSpacing: "0.24em", color: "var(--muted-3)" }}
-                >
-                  Code promo
-                </label>
-                <input
-                  id="promo"
-                  type="text"
-                  value={promoInput}
-                  onChange={(event) => setPromoInput(event.target.value)}
-                  placeholder="Votre code"
-                  autoComplete="off"
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    background: "none",
-                    border: 0,
-                    outline: "none",
-                    fontFamily: "var(--body)",
-                    fontSize: 18,
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="tag"
-                  disabled={checking}
-                  style={{ background: "none", border: 0, cursor: "pointer" }}
-                >
-                  {checking ? "…" : "Appliquer"}
-                </button>
-              </form>
-
-              {promoError && <p className="field-error">{promoError}</p>}
-              {promo && (
-                <p style={{ margin: "10px 0 0", fontSize: 16, color: "var(--kai-soft)" }}>
-                  {promo.label} — {describePromo(promo)}.
-                </p>
-              )}
+              <PromoField subTotal={totals.subTotal} value={promo} onChange={setPromo} />
 
               <Link
                 href={promo ? `/commande?promo=${encodeURIComponent(promo.code)}` : "/commande"}

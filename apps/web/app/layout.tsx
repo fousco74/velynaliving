@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 
 const jost = Jost({
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500"],
+  weight: ["200", "300", "400", "500", "600"], // 600 : libellé du code promo
   variable: "--font-jost",
   display: "swap",
 });

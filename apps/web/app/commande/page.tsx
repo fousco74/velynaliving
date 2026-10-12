@@ -15,6 +15,7 @@ import {
   type DeliveryMethod,
 } from "@velyna/shared";
 import { useCart } from "@/components/cart-provider";
+import { PromoField } from "@/components/promo-field";
 import { ApiError, checkPromo, createOrder, imageSrc, type CheckedPromo } from "@/lib/api";
 
 // Pas d'étape « Règlement » : aucun paiement n'est intégré, la boutique
@@ -431,7 +432,6 @@ function CommandeContent() {
                 <span>{describePromo(promo)}</span>
               </div>
             )}
-            {promoError && <p className="field-error">{promoError}</p>}
             <div className="summary-row">
               <span>Livraison</span>
               <span>{totals.deliveryCost === 0 ? "Offerte" : formatXOF(totals.deliveryCost)}</span>
@@ -440,6 +440,16 @@ function CommandeContent() {
               <span>Total</span>
               <span>{formatXOF(totals.total)}</span>
             </div>
+
+            <PromoField
+              subTotal={totals.subTotal}
+              value={promo}
+              onChange={(next) => {
+                setPromo(next);
+                setPromoError("");
+              }}
+              error={promoError}
+            />
           </aside>
         </div>
       </section>
