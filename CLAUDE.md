@@ -72,12 +72,23 @@ bundlée en fonction serverless, images dans Vercel Blob).
 **Images statiques administrables** (`/admin/images`) : hero de l'accueil, blocs des deux marques,
 vignettes du menu « Marques », pages marques, portraits de la fondatrice, logo, visuel 404.
 
+**Codes promo administrables** (`/admin/codes-promo`, 12/10/2026) : table `PromoCode`, type choisi
+à la création (pourcentage, montant fixe, livraison offerte), période de validité, limites
+optionnelles (nombre total, une fois par e-mail, minimum d'achat). VELYNA10 n'est plus une
+constante : la migration `promo_code` l'a inséré en base.
+
 Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
 
 ## Règles non négociables
 
 - Les montants ne viennent **jamais** du client : `POST /orders` ne reçoit que `[{slug, quantity}]`
   et recalcule tout via `computeTotals`.
+- Les codes promo se valident **uniquement côté API** (`resolvePromo`, `apps/api/src/lib/promo.ts`) ;
+  `computeTotals` ne reçoit qu'une règle déjà validée. Un code refusé à la commande renvoie 400
+  (`field: "promoCode"`) au lieu d'être ignoré : le client ne doit pas payer plus que ce qu'il a vu.
+  `usedCount` est incrémenté par `updateMany` conditionnel dans la transaction (comme le stock)
+  et rendu quand la commande passe en `RESTOCKING_STATUSES`. Un code déjà utilisé ne se supprime
+  pas, il se désactive. Les bornes de dates sont en UTC, qui est l'heure d'Abidjan.
 - Écritures de commande dans un seul `prisma.$transaction`, stock décrémenté par `updateMany`
   conditionnel (`stock >= quantity`) pour éviter la survente.
 - Réponses API : `{ data }` en succès, `{ error }` (chaîne) en échec, `issues` en plus si Zod.
@@ -100,6 +111,9 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   images : sur un hébergement à releases atomiques, un chemin relatif suit le `cwd` du service,
   atterrit dans `releases/<id>/…` et meurt avec elle, pendant que la base continue de référencer
   `/uploads/…`. En production, l'API **refuse de démarrer** dans ce cas (`apps/api/src/lib/uploads.ts`).
+- **`apps/api/.env` pointe vers la base de PRODUCTION** (Prisma Postgres) : toute commande Prisma
+  lancée sans surcharger `DATABASE_URL` (`migrate dev`, `db:seed`, scripts) s'exécute en prod.
+  En local : `DATABASE_URL=postgres://velyna:velyna_dev@localhost:5434/velyna`.
 - Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
   publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
   (compteur de vues) et `POST /auth/login|logout`.

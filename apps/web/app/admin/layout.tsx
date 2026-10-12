@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/produits", label: "Produits" },
   { href: "/admin/maisons", label: "Maisons" },
   { href: "/admin/journal", label: "Journal" },
+  { href: "/admin/codes-promo", label: "Codes promo" },
   { href: "/admin/stock", label: "Stock" },
   { href: "/admin/images", label: "Images" },
 ];

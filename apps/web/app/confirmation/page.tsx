@@ -138,6 +138,27 @@ function ConfirmationContent() {
                     </span>
                   </div>
                 ))}
+                {/* Le détail n'apparaît que s'il explique un écart avec la somme des articles. */}
+                {(order.discount > 0 || order.deliveryCost > 0) && (
+                  <div className="pt-3.5">
+                    <div className="summary-row">
+                      <span>Sous-total</span>
+                      <span>{formatXOF(order.subTotal)}</span>
+                    </div>
+                    {order.discount > 0 && (
+                      <div className="summary-row">
+                        <span>Code {order.promoCode}</span>
+                        <span>−{formatXOF(order.discount)}</span>
+                      </div>
+                    )}
+                    <div className="summary-row">
+                      <span>Livraison</span>
+                      <span>
+                        {order.deliveryCost === 0 ? "Offerte" : formatXOF(order.deliveryCost)}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="summary-total">
                   <span>Total à régler</span>
                   <span>{formatXOF(order.total)}</span>

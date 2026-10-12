@@ -86,7 +86,11 @@ export const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 
 /** « -15 % », « -5 000 F CFA », « Livraison offerte ». */
 export const describePromo = ({ type, value }: Pick<PromoRule, "type" | "value">) =>
-  type === "PERCENT" ? `-${value} %` : type === "AMOUNT" ? `-${formatXOF(value)}` : "Livraison offerte";
+  type === "PERCENT"
+    ? `-${value} %`
+    : type === "AMOUNT"
+      ? `-${formatXOF(value)}`
+      : "Livraison offerte";
 
 /**
  * Source de vérité des montants, partagée entre l'API et le panier.
@@ -699,7 +703,10 @@ type PromoShape = {
  * comparent comme des chaînes, sans passer par `Date`.
  */
 const checkPromo = (promo: PromoShape, ctx: z.RefinementCtx) => {
-  if (promo.type === "PERCENT" && (promo.value === undefined || promo.value < 1 || promo.value > 100)) {
+  if (
+    promo.type === "PERCENT" &&
+    (promo.value === undefined || promo.value < 1 || promo.value > 100)
+  ) {
     ctx.addIssue({ code: "custom", path: ["value"], message: "Pourcentage entre 1 et 100" });
   }
   if (promo.type === "AMOUNT" && (promo.value === undefined || promo.value < 1)) {

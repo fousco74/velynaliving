@@ -27,7 +27,9 @@ promoCodeRouter.get("/:code", checkLimit, async (req, res) => {
     return res.status(400).json({ error: "Paramètres invalides.", issues: parsed.error.issues });
   }
 
-  const result = await resolvePromo(prisma, String(req.params.code), { subTotal: parsed.data.subTotal });
+  const result = await resolvePromo(prisma, String(req.params.code), {
+    subTotal: parsed.data.subTotal,
+  });
 
   if ("error" in result) return res.status(404).json({ error: result.error });
 
