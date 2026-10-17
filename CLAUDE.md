@@ -127,9 +127,11 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   images : sur un hébergement à releases atomiques, un chemin relatif suit le `cwd` du service,
   atterrit dans `releases/<id>/…` et meurt avec elle, pendant que la base continue de référencer
   `/uploads/…`. En production, l'API **refuse de démarrer** dans ce cas (`apps/api/src/lib/uploads.ts`).
-- **`apps/api/.env` pointe vers la base de PRODUCTION** (Prisma Postgres) : toute commande Prisma
-  lancée sans surcharger `DATABASE_URL` (`migrate dev`, `db:seed`, scripts) s'exécute en prod.
-  En local : `DATABASE_URL=postgres://velyna:velyna_dev@localhost:5434/velyna`.
+- `apps/api/.env` pointe vers la base **locale** (depuis le 12/10/2026). L'adresse de la base de
+  PRODUCTION (Prisma Postgres) est dans `apps/api/.env.production` (ignoré par git), à charger
+  explicitement : `set -a; . ./.env.production; set +a; npx prisma migrate deploy`. Ne jamais la
+  remettre dans `.env` : `pnpm dev` y branchait le site local sur la prod. `tsx watch` ne
+  surveille pas `.env` : après l'avoir modifié, redémarrer l'API.
 - Toute route d'écriture vit sous `/admin`, derrière `requireAdmin`. Les seules écritures
   publiques sont volontaires : `POST /orders` (commande en invité), `POST /journal/:slug/view`
   (compteur de vues), `POST /products/:slug/reviews` (avis, limité à 5/h/IP, champ piège,
