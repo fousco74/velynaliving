@@ -88,7 +88,8 @@ est publié d'emblée, `Review.source = ADMIN` (visible en admin seulement). Cr�
 `createReview` (`routes/review.ts`).
 
 **Vidéo de fiche produit** : colonne `Product.video` (MP4/WebM, `/assets/…` ou `/uploads/…`),
-lue en boucle muette par `AmbientVideo` seulement quand elle est à l'écran, jamais en
+lue en boucle par `AmbientVideo` (muette au départ — sinon l'autoplay est bloqué —, bouton
+son pour l'activer/couper) seulement quand elle est à l'écran, jamais en
 `prefers-reduced-motion`. L'affiche est le même chemin en `.jpg`. Le matcha a
 `/assets/matcha-rituel.mp4` (posé par la migration `product_video`).
 
