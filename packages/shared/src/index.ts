@@ -853,25 +853,32 @@ export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
   REJECTED: "Refusé",
 };
 
-export const REVIEW_BODY_MIN = 20;
+export const REVIEW_BODY_MIN = 10;
 export const REVIEW_BODY_MAX = 2000;
 export const REVIEWS_PER_PAGE = 10;
 
-export const reviewInputSchema = z.object({
-  firstName: z.string().trim().min(1, "Prénom requis").max(40),
-  lastName: z.string().trim().min(1, "Nom requis").max(60),
+/** Champs d'un avis, identiques sur le site et dans le back-office. */
+const reviewFields = {
+  name: z.string().trim().min(2, "Nom complet requis").max(100),
   email: z.email("Adresse e-mail invalide"),
   rating: z.number().int().min(1, "Choisissez une note").max(5),
-  title: z.string().trim().max(80).optional(),
   body: z
     .string()
     .trim()
     .min(REVIEW_BODY_MIN, `Quelques mots de plus : ${REVIEW_BODY_MIN} caractères minimum`)
     .max(REVIEW_BODY_MAX),
-  /** Facultatif : prouve l'achat et vaut le badge « Achat vérifié ». */
-  orderNumber: z.string().trim().max(30).optional(),
+};
+
+export const reviewInputSchema = z.object({
+  ...reviewFields,
   /** Champ piège, invisible pour un humain : rempli, c'est un robot. */
   website: z.string().optional(),
+});
+
+/** Avis saisi dans le back-office : un avis réellement reçu hors du site (WhatsApp, boutique…). */
+export const adminReviewCreateSchema = z.object({
+  productSlug: z.string().trim().min(1, "Choisissez un produit"),
+  ...reviewFields,
 });
 
 /** PATCH de modération : redéclaré, jamais `.partial()`. `reply: ""` retire la réponse. */
@@ -892,10 +899,26 @@ export const reviewPageQuerySchema = z.object({
 
 export type ReviewInput = z.infer<typeof reviewInputSchema>;
 export type ReviewModeration = z.infer<typeof reviewModerationSchema>;
+export type AdminReviewCreate = z.infer<typeof adminReviewCreateSchema>;
 
-/** « Awa K. » : le nom complet d'un client n'a rien à faire sur une page publique. */
-export const displayAuthor = (firstName: string, lastName: string) =>
-  `${firstName.trim()} ${lastName.trim().charAt(0).toUpperCase()}.`;
+/**
+ * « Awa Koné Diallo » → prénom « Awa », nom « Koné Diallo ». Le premier mot est
+ * le prénom : c'est l'usage à Abidjan comme en France, et le pire cas (nom
+ * inversé) ne publie qu'une initiale différente.
+ */
+export const splitFullName = (name: string) => {
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
+  return { firstName, lastName: rest.join(" ") };
+};
+
+/**
+ * « Awa K. » : le nom complet d'un client n'a rien à faire sur une page publique.
+ * Un seul mot saisi : le prénom seul.
+ */
+export const displayAuthor = (firstName: string, lastName: string) => {
+  const initial = lastName.trim().charAt(0).toUpperCase();
+  return initial ? `${firstName.trim()} ${initial}.` : firstName.trim();
+};
 
 export type RatingSummary = {
   average: number;

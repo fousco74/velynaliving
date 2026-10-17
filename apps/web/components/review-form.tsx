@@ -4,9 +4,7 @@ import { useState } from "react";
 import { REVIEW_BODY_MAX, REVIEW_BODY_MIN } from "@velyna/shared";
 import { ApiError, submitReview } from "@/lib/api";
 
-type Errors = Partial<
-  Record<"firstName" | "lastName" | "email" | "rating" | "body" | "orderNumber" | "form", string>
->;
+type Errors = Partial<Record<"name" | "email" | "rating" | "body" | "form", string>>;
 
 const RATING_WORDS = ["", "Décevant", "Moyen", "Bien", "Très bien", "Exceptionnel"];
 
@@ -32,13 +30,10 @@ export const ReviewForm = ({ slug, productName }: { slug: string; productName: s
 
     try {
       await submitReview(slug, {
-        firstName: text("firstName"),
-        lastName: text("lastName"),
+        name: text("name"),
         email: text("email"),
         rating,
-        title: text("title") || undefined,
         body: body.trim(),
-        orderNumber: text("orderNumber") || undefined,
         website: text("website") || undefined,
       });
       setSent(true);
@@ -126,33 +121,18 @@ export const ReviewForm = ({ slug, productName }: { slug: string; productName: s
 
       <div className="form-grid mt-6">
         <div className="field">
-          <label htmlFor="r-first">Prénom</label>
-          <input id="r-first" name="firstName" autoComplete="given-name" required />
-          {errors.firstName && <p className="field-error">{errors.firstName}</p>}
-        </div>
-        <div className="field">
-          <label htmlFor="r-last">Nom — seule l&apos;initiale sera affichée</label>
-          <input id="r-last" name="lastName" autoComplete="family-name" required />
-          {errors.lastName && <p className="field-error">{errors.lastName}</p>}
+          <label htmlFor="r-name">Nom complet — publié en « Prénom N. »</label>
+          <input id="r-name" name="name" autoComplete="name" maxLength={100} required />
+          {errors.name && <p className="field-error">{errors.name}</p>}
         </div>
         <div className="field">
           <label htmlFor="r-email">E-mail — jamais publié</label>
           <input id="r-email" name="email" type="email" autoComplete="email" required />
+          <p className="mt-1.5 mb-0 text-[15px] text-muted-2">
+            Celui de votre commande : votre avis portera le badge « Achat vérifié ».
+          </p>
           {errors.email && <p className="field-error">{errors.email}</p>}
         </div>
-        <div className="field">
-          <label htmlFor="r-order">N° de commande — facultatif</label>
-          <input id="r-order" name="orderNumber" placeholder="VL-2026-0001" />
-          <p className="mt-1.5 mb-0 text-[15px] text-muted-2">
-            Avec l&apos;e-mail de la commande, votre avis portera le badge « Achat vérifié ».
-          </p>
-          {errors.orderNumber && <p className="field-error">{errors.orderNumber}</p>}
-        </div>
-      </div>
-
-      <div className="field mt-6">
-        <label htmlFor="r-title">Titre — facultatif</label>
-        <input id="r-title" name="title" maxLength={80} />
       </div>
 
       <div className="field mt-6">

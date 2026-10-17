@@ -1,6 +1,11 @@
 import express from "express";
-import { adminReviewQuerySchema, reviewModerationSchema } from "@velyna/shared";
+import {
+  adminReviewCreateSchema,
+  adminReviewQuerySchema,
+  reviewModerationSchema,
+} from "@velyna/shared";
 import { prisma } from "../db.js";
+import { createReview } from "./review.js";
 
 export const adminReviewsRouter = express.Router();
 
@@ -14,6 +19,7 @@ const REVIEW_ADMIN = {
   body: true,
   verified: true,
   status: true,
+  source: true,
   reply: true,
   repliedAt: true,
   publishedAt: true,
@@ -52,6 +58,34 @@ adminReviewsRouter.get("/reviews", async (req, res) => {
       counts: Object.fromEntries(counts.map((row) => [row.status, row._count._all])),
     },
   });
+});
+
+adminReviewsRouter.post("/reviews", async (req, res) => {
+  const parsed = adminReviewCreateSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Avis invalide.", issues: parsed.error.issues });
+  }
+
+  const { productSlug, ...input } = parsed.data;
+
+  // Tout statut : la maison peut préparer l'avis d'un produit encore en brouillon.
+  const product = await prisma.product.findUnique({
+    where: { slug: productSlug },
+    select: { id: true },
+  });
+  if (!product) {
+    return res.status(400).json({ error: "Produit introuvable.", field: "productSlug" });
+  }
+
+  // Saisi par la maison : publié d'emblée, la relecture est déjà faite.
+  const review = await createReview(product.id, input, {
+    status: "APPROVED",
+    source: "ADMIN",
+    select: REVIEW_ADMIN,
+  });
+
+  res.status(201).json({ data: review });
 });
 
 adminReviewsRouter.patch("/reviews/:id", async (req, res) => {

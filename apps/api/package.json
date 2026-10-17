@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "admin:create": "tsx prisma/create-admin.ts",
     "journal:seed": "tsx prisma/seed-journal.ts",
+    "reviews:demo": "tsx prisma/seed-demo-reviews.ts",
     "uploads:sweep": "tsx prisma/sweep-uploads.ts",
     "build": "prisma generate && tsc",
     "build:vercel": "prisma generate && prisma migrate deploy && node scripts/build-vercel.mjs",

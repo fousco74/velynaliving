@@ -32,6 +32,7 @@ pnpm format       # prettier
 # Exploitation (depuis apps/api)
 pnpm --filter @velyna/api admin:create <email> <mot-de-passe>   # créer/réinitialiser un admin
 pnpm --filter @velyna/api journal:seed                          # le journal seul (inclus dans db:seed)
+pnpm --filter @velyna/api reviews:demo                          # avis fictifs — base LOCALE seulement (refuse les autres)
 pnpm --filter @velyna/api uploads:sweep                         # images orphelines (simulation)
 pnpm --filter @velyna/api uploads:sweep -- --apply              # …et suppression
 ```
@@ -81,6 +82,10 @@ constante : la migration `promo_code` l'a inséré en base.
 
 **Avis clients** (`/admin/avis`) : dépôt ouvert à tous depuis la fiche produit, publication
 après modération, réponse de la maison, badge « Achat vérifié », JSON-LD `AggregateRating`.
+Formulaire **simple** des deux côtés (public et `/admin/avis/nouveau`) : nom complet, e-mail,
+note, avis. Le nom est découpé par `splitFullName` (1er mot = prénom). Un avis saisi par l'admin
+est publié d'emblée, `Review.source = ADMIN` (visible en admin seulement). Création unique :
+`createReview` (`routes/review.ts`).
 
 **Vidéo de fiche produit** : colonne `Product.video` (MP4/WebM, `/assets/…` ou `/uploads/…`),
 lue en boucle muette par `AmbientVideo` seulement quand elle est à l'écran, jamais en
@@ -130,7 +135,8 @@ Reste à faire : conversion Tailwind des pages restantes, intégration paiement.
   publié seulement après modération) et `POST /auth/login|logout`.
 - Un avis ne renvoie **jamais** l'e-mail ni le nom complet côté public (liste blanche dans
   `routes/review.ts`, affichage « Prénom I. » via `displayAuthor`). Le badge « Achat vérifié »
-  exige numéro de commande + e-mail d'une commande non annulée contenant le produit.
+  est déduit de l'**e-mail** : une commande non annulée de ce produit, passée avec cette
+  adresse et pas encore notée (plus de numéro de commande à saisir).
 - Les images du back-office se téléversent (`POST /admin/uploads`, corps brut, pas de multipart).
   Elles sont écrites dans `UPLOAD_DIR` côté API et servies sur `/uploads/…` — **jamais** dans
   `apps/web/public/`, qui est du build et repart à zéro à chaque déploiement. Prévoir un volume

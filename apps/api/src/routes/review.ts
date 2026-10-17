@@ -6,7 +6,10 @@ import {
   reviewInputSchema,
   reviewPageQuerySchema,
   REVIEWS_PER_PAGE,
+  splitFullName,
+  type ReviewInput,
 } from "@velyna/shared";
+import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../db.js";
 import { rateLimit } from "../lib/rate-limit.js";
 
@@ -30,6 +33,57 @@ export const publishedSummary = async (productId: number) => {
   });
 
   return ratingSummary(rows.map((row) => ({ rating: row.rating, count: row._count._all })));
+};
+
+/**
+ * Crée un avis, depuis le site comme depuis le back-office.
+ *
+ * Le badge « Achat vérifié » se déduit de l'e-mail : une commande active de ce
+ * produit passée avec cette adresse, et pas encore notée. Rien à saisir pour le
+ * client. Compromis assumé : connaître l'e-mail d'un client suffit à obtenir le
+ * badge sous son nom — la modération reste le garde-fou.
+ */
+export const createReview = async <S extends Prisma.ReviewSelect>(
+  productId: number,
+  input: Pick<ReviewInput, "name" | "email" | "rating" | "body">,
+  options: { status: "PENDING" | "APPROVED"; source: "SITE" | "ADMIN"; select?: S },
+) => {
+  const email = input.email.toLowerCase();
+
+  const order = await prisma.order.findFirst({
+    where: {
+      email: { equals: email, mode: "insensitive" },
+      status: { notIn: [...RESTOCKING_STATUSES] },
+      items: { some: { productId } },
+      // Une commande ne vaut qu'un avis vérifié par produit (contrainte unique).
+      reviews: { none: { productId } },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  const data = {
+    productId,
+    ...splitFullName(input.name),
+    email,
+    rating: input.rating,
+    body: input.body,
+    status: options.status,
+    source: options.source,
+    publishedAt: options.status === "APPROVED" ? new Date() : null,
+  };
+
+  try {
+    return await prisma.review.create({
+      data: { ...data, verified: order !== null, orderId: order?.id ?? null },
+      select: options.select,
+    });
+  } catch (err) {
+    // P2002 : deux avis simultanés sur la même commande. Le second est gardé,
+    // simplement sans badge, plutôt que perdu.
+    if ((err as { code?: string }).code !== "P2002") throw err;
+    return prisma.review.create({ data, select: options.select });
+  }
 };
 
 const findProduct = (slug: string) =>
@@ -100,57 +154,7 @@ reviewRouter.post("/", submitLimit, async (req, res) => {
   const product = await findProduct(String((req.params as { slug?: string }).slug));
   if (!product) return res.status(404).json({ error: "Produit introuvable." });
 
-  const email = input.email.toLowerCase();
-  let orderId: number | null = null;
-
-  if (input.orderNumber) {
-    // Même réponse que la commande n'existe pas, que l'e-mail diffère ou que
-    // le produit n'y figure pas : sans cela, on confirmerait l'existence d'une
-    // commande à un inconnu (même règle que le suivi de commande).
-    const order = await prisma.order.findFirst({
-      where: {
-        number: input.orderNumber.toUpperCase(),
-        email,
-        status: { notIn: [...RESTOCKING_STATUSES] },
-        items: { some: { productId: product.id } },
-      },
-      select: { id: true },
-    });
-
-    if (!order) {
-      return res.status(400).json({
-        error: "Aucune commande de ce produit ne correspond à ce numéro et à cet e-mail.",
-        field: "orderNumber",
-      });
-    }
-
-    orderId = order.id;
-  }
-
-  try {
-    await prisma.review.create({
-      data: {
-        productId: product.id,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        email,
-        rating: input.rating,
-        title: input.title || null,
-        body: input.body,
-        verified: orderId !== null,
-        orderId,
-      },
-    });
-  } catch (err) {
-    // P2002 : un avis existe déjà pour cette commande et ce produit.
-    if ((err as { code?: string }).code === "P2002") {
-      return res.status(409).json({
-        error: "Vous avez déjà donné votre avis sur ce produit pour cette commande.",
-        field: "orderNumber",
-      });
-    }
-    throw err;
-  }
+  await createReview(product.id, input, { status: "PENDING", source: "SITE" });
 
   res.status(201).json(accepted);
 });

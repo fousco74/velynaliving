@@ -4,6 +4,7 @@ import {
   type PromoCodeUpdate,
   type PromoRule,
   type RatingSummary,
+  type AdminReviewCreate,
   type ReviewInput,
   type ReviewStatus,
   type SiteImageKey,
@@ -189,6 +190,7 @@ export type AdminReview = {
   body: string;
   verified: boolean;
   status: ReviewStatus;
+  source: "SITE" | "ADMIN";
   reply: string | null;
   repliedAt: string | null;
   publishedAt: string | null;
@@ -201,6 +203,9 @@ export const getAdminReviews = (status?: ReviewStatus) =>
   request<{ reviews: AdminReview[]; counts: Partial<Record<ReviewStatus, number>> }>(
     `/admin/reviews${status ? `?status=${status}` : ""}`,
   );
+
+export const createAdminReview = (body: AdminReviewCreate) =>
+  request<AdminReview>("/admin/reviews", { method: "POST", body: JSON.stringify(body) });
 
 export const moderateReview = (id: number, patch: { status?: ReviewStatus; reply?: string }) =>
   request<AdminReview>(`/admin/reviews/${id}`, { method: "PATCH", body: JSON.stringify(patch) });

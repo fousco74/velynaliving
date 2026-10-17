@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { REVIEW_STATUS_LABELS, type ReviewStatus } from "@velyna/shared";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { REVIEW_STATUSES, REVIEW_STATUS_LABELS, type ReviewStatus } from "@velyna/shared";
 import { DateText } from "@/components/admin-ui";
 import { Stars } from "@/components/stars";
 import { deleteReview, getAdminReviews, moderateReview, type AdminReview } from "@/lib/api";
@@ -16,8 +17,13 @@ const FILTERS: { value: ReviewStatus | ""; label: string }[] = [
   { value: "", label: "Tous" },
 ];
 
-export default function AdminReviewsPage() {
-  const [status, setStatus] = useState<ReviewStatus | "">("PENDING");
+const ReviewsView = () => {
+  const params = useSearchParams();
+  // `?statut=APPROVED` : après un ajout, on ouvre l'onglet où se trouve l'avis.
+  const initial = params.get("statut");
+  const [status, setStatus] = useState<ReviewStatus | "">(
+    REVIEW_STATUSES.find((value) => value === initial) ?? "PENDING",
+  );
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [counts, setCounts] = useState<Partial<Record<ReviewStatus, number>>>({});
   const [loading, setLoading] = useState(true);
@@ -53,6 +59,9 @@ export default function AdminReviewsPage() {
             sincères : un mur d&apos;avis parfaits n&apos;inspire pas confiance.
           </p>
         </div>
+        <Link href="/admin/avis/nouveau" className="btn btn-solid">
+          Ajouter un avis
+        </Link>
       </header>
 
       <div className="admin-filters">
@@ -81,6 +90,14 @@ export default function AdminReviewsPage() {
         ))
       )}
     </>
+  );
+};
+
+export default function AdminReviewsPage() {
+  return (
+    <Suspense fallback={<p className="eyebrow">Chargement…</p>}>
+      <ReviewsView />
+    </Suspense>
   );
 }
 
@@ -117,6 +134,7 @@ const ReviewCard = ({ review, onChange }: { review: AdminReview; onChange: () =>
               Achat vérifié — {review.order?.number}
             </span>
           )}
+          {review.source === "ADMIN" && <span className="pill">Saisi par la maison</span>}
         </div>
         <Link href={`/produit/${review.product.slug}#avis`} className="admin-sub link-underline">
           {review.product.name} ↗

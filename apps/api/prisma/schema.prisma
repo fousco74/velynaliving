@@ -70,6 +70,13 @@ enum ReviewStatus {
   REJECTED
 }
 
+// Origine d'un avis : déposé par le client sur le site, ou saisi dans le
+// back-office (avis reçu par WhatsApp, e-mail, en boutique). Jamais public.
+enum ReviewSource {
+  SITE
+  ADMIN
+}
+
 // Nature de la remise d'un code promo, choisie à la création.
 enum PromoType {
   PERCENT // value = pourcentage (1 à 100) du sous-total
@@ -312,6 +319,7 @@ model Review {
   verified    Boolean      @default(false)
   orderId     Int?         @map("order_id")
   status      ReviewStatus @default(PENDING)
+  source      ReviewSource @default(SITE)
   reply       String? // réponse de la maison, publiée sous l'avis
   repliedAt   DateTime?    @map("replied_at")
   publishedAt DateTime?    @map("published_at")
